@@ -1,0 +1,28 @@
+CFG example:
+	%start program
+	
+	Program:
+		| Interfaces                  (signature)
+		| implementation     (after end)
+		| eof
+	
+	Interface: 
+		|stroage
+		|map
+		|event
+		|method
+	
+	Implementation:
+		|constructor
+		|method
+	
+	Constructor:
+		| storage
+		|returns
+	
+	Method:
+		|guard
+		|storage
+		|effects
+		|returns
+		
