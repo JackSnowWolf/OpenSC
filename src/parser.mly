@@ -1,50 +1,56 @@
 %{ open Ast
 %}
 
+%token SIGNATURE END STROAGE EVENT OF METHOD CONSTRUCTOR ENVIRONMENT GUARD EFFECTS LOGS RETURNS MAP
+%token ASSIGN ARROW MAPASSIGN ASSIGN COLON SEMI
+%token LBRACE RBRACE LPAREN RPAREN LBRACK RBRACK
+(*  this part need to be revised  *)
+%token <string> NUMLITERAL UINTType
+%token <string> ID ADDRESS
+%token <unit> UNIT 
+%token <bool> BooLit
+(*  end of the part  *)
+%token EOF
 
-(* add some simple CFG for general ideas *)
+(*   left .......... left associativity    *)
+%start program
+%type <Ast.program> program
+
+%%
 
 program:
-	 Interfaces
-	|Implementation
-	|eof
+	 InterfacesDefs ImplementationDef eof { $1 }
 
-Interfaces:
-	|Interfaces
-	|Interfaces { (* add something like $1 ... *)}
+InterfacesDefs:
+	 { [] }   /* nothing */ 
+	|InterfacesDef InterfacesDefs {$1 :: $2} (* I am not sure need to confirmed! *)
 
-Interface:
-	 InterfaceStroages
-	|Maps
-	|Events
-	|InterfaceConstructor
-	|InterfaceMethods
+InterfacesDef:
+	| InterfaceBody
+	| END {End $1}
 
-InterfaceStroages:
-	 InterfaceStorage 
-	|InterfaceStroages { (* add something like $1 ... *)}
+InterfaceBody:
+	(*  should line32 be STROAGE ID COLON UINTType however I think type is nonterimal. need talk *)
+	| STROAGE ID COLON typ {RetAssign $2, $4} (* should we have a type called typeIdentifier ?? *)
+	| MAP ID COLON ADDRESS MAPASSIGN typ
+	| EVENT ID ASSIGN ID OF typ (* need typeIdentifiers for multiple type. leave now *)
+	| CONSTRUCTOR ID COLON typ ARROW typ
+	| METHOD ID COLON typ ARROW typ(*  change to typeIdentifiers later *)
 
+/* typ:
+		|
+		|
+		|
+		| 
 
-Maps: 
-	 Map 
-	|Maps  { (* add something like $1 ... *)}
-
-Events:
-	 Event
-	|Events
-
-InterfaceConsturtcor:
-	ID Declaration TYPE RETYPES TYPE
-
-InterfaceMethods:
-	 InterfaceMethod
-	|InterfaceMethods
-
-
-Implementation:
-	  ImplementationContrustor
+ImplementationDef:
+	  ImplementationConstructor
 	 |ImplementationMethods
 
+ImplementationConstructor:
+	| CONSTRUCTOR ID LPAREN ID COLON typ RPAREN
+	|
+	
 ImplementationMethods:
 	 ImplementationMethod 
 	|ImplementationMethods
@@ -56,4 +62,4 @@ Body:
 	 GUARD
 	|ImplementationSTORAGE 
 	|EFFECTS
-	|RETURNS
+	|RETURNS */
