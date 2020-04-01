@@ -50,14 +50,12 @@ type body =
 type implementationDef = 
 	| Consturctor of string * string * expr * body
 	| Method of string * string * expr * body
+	| End of string
 
 
 type interfacesDefs = 
 	|	Interfacedef of decl list
 
-(* END keyword *)
-type separator =
-	| End of string
 
-type program = interfacesDefs * separator * implementationDef
+type program = interfacesDefs * implementationDef
 
