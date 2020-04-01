@@ -56,7 +56,7 @@ type interfacesDefs =
 	| Interfacedef of decl list
 		
 
-tyoe Interfacedef =
+type Interfacedef =
 	| 
 	| End of string
 
