@@ -4,7 +4,7 @@ type op = Add | Sub | Equal | Neq | Less | And | Or
 type typ = 
 	| Bool of bool
 	| Int of int 
-	| Uint of int 
+	| UInt of int 
 	| Address of string
 	| UNIT of unit
 
