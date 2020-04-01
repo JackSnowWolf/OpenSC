@@ -26,8 +26,7 @@ InterfacesDefs:
 	|InterfacesDef InterfacesDefs {$1 :: $2} (* I am not sure need to confirmed! *)
 
 InterfacesDef:
-	| InterfaceBody
-	| END {End $1}
+	| SIGNATURE InterfaceBody END {InterfaceDef $2} (* need change.*)
 
 InterfaceBody:
 	(*  should line32 be STROAGE ID COLON UINTType however I think type is nonterimal. need talk *)
