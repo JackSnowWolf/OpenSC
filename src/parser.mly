@@ -30,7 +30,7 @@ InterfacesDef:
 
 InterfaceBody:
 	(*  should line32 be STROAGE ID COLON UINTType however I think type is nonterimal. need talk *)
-	| STROAGE ID COLON typ {RetAssign $2, $4} (* should we have a type called typeIdentifier ?? *)
+	| STROAGE ID COLON typ {TypeAssign $2, $4} (* should we have a type called typeIdentifier ?? *)
 	| MAP ID COLON ADDRESS MAPASSIGN typ
 	| EVENT ID ASSIGN ID OF typ (* need typeIdentifiers for multiple type. leave now *)
 	| CONSTRUCTOR ID COLON typ ARROW typ
