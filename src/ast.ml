@@ -16,7 +16,7 @@ type lit =
 	
 type assignmentexpr = 
 	  MapAssign of string * string * lit 
-	| VarAssign of string * typ
+	| TypeAssign of string * typ
 	| RetAssign of typ * typ
 	| PointASsign of string * string
 
