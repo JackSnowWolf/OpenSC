@@ -1,0 +1,24 @@
+<p>
+  <strong>User:</strong>
+  <%= note.user%>
+</p>
+
+<p>
+  <strong>Title:</strong>
+  <%= note.title %>
+</p>
+
+<p>
+  <strong>Body:</strong>
+  <%= note.body %>
+</p>
+
+<p>
+  <%# 
+  Clicking this new "Destroy Note" link will fire off a 
+  DELETE /subjects/:subject_id/notes/:id to NotesController.
+  %>
+  <%= link_to 'Delete Note', [note.subject, note],
+               method: :delete, 
+               data: { confirm: 'Are you sure?'} %>
+</p>

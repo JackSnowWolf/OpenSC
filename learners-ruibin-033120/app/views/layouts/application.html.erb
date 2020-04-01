@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Latest compiled and minified Bootstrap CSS -->
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+          integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+          crossorigin="anonymous">
+    <!-- JQuery -->
+    <script src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
+    <link rel="stylesheet"
+          href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <style>
+      body {
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+      h1 {
+        padding: 30px 20px;
+        font-weight: bold;
+      }
+      .text-uppercase {
+        letter-spacing: 0.1em;
+      }
+      .vertical-nav {
+        min-width: 20rem;
+        width: 20rem;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.4s;
+      }
+      .nav-section {
+        margin-bottom: 24px;
+      }
+      .card {
+        width: 15rem;
+        margin: 10px 0;
+      }
+      .card-text {
+        height: 70px;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+      }
+      .page-content {
+        width: calc(100% - 21rem);
+        margin-left: 21rem;
+        transition: all 0.4s;
+      }
+      .quotation{
+        font-size: 18px;
+        padding: 10px 20px;
+        quotes: "\201C""\201D""\2018""\2019";
+        line-height: 1.6;
+        color: dimgray;
+      }
+      .quotation:before {
+        content: open-quote;
+        display: inline;
+        height: 0;
+        line-height: 0;
+        top: 30px;
+        color: #ccc;
+        font-size: 3em;
+      }
+      .quotation::after {
+        content: close-quote;
+        display: inline;
+        height: 0;
+        line-height: 0;
+        position: relative;
+        top: 35px;
+        color: #ccc;
+        font-size: 3em;
+      }
+      .text-gray {
+        color: #aaa;
+      }
+      .form-row {
+        margin: 20px 0;
+      }
+      #record-list {
+        margin: 30px 0;
+      }
+      .record {
+        margin: 20px 0;
+      }
+      .record-delete-btn {
+        height: 30px;
+      }
+      #search-container {
+        margin: 10px 0 0 20px;
+      }
+      #sidebar.active {
+        margin-left: -17rem;
+      }
+      #content.active {
+        width: 100%;
+        margin: 0;
+      }
+      @media (max-width: 768px) {
+        #sidebar {
+          margin-left: -21rem;
+        }
+        #sidebar.active {
+          margin-left: 0;
+        }
+        #content {
+          width: 100%;
+          margin: 0;
+        }
+        #content.active {
+          margin-left: 21rem;
+          width: calc(100% - 21rem);
+        }
+      }
+    </style>
+
+    <title>Learners</title>
+    <%# TODO: Not sure if the following few lines are needed. ? %>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
+    <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload' %>
+  </head>
+
+  <body>
+    <!-- Vertical Navbar -->
+    <div class="vertical-nav bg-white" id="sidebar">
+      <div class="py-4 px-3 mb-4 bg-light">
+        <div class="media d-flex align-items-center">
+          <div class="media-body">
+            <h1 class="m-0">Learners</h1>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-gray font-weight-bold text-uppercase px-3 small pb-4 mb-0">
+        Navigation
+      </p>
+
+      <div class="nav-section">
+        <ul class="nav flex-column bg-white mb-0">
+          <li class="nav-item">
+            
+            <%# <%= link_to 'Subjects', subjects_path, :id => "subjects-link", :class => "nav-link text-dark" %>
+            
+            <a href="/subjects" class="nav-link text-dark" id="subjects-link">
+              <i class="fa fa-th-large mr-3 text-primary fa-fw"></i>
+              Subjects
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/orgs" class="nav-link text-dark" id="orgs-link">
+              <i class="fa fa-cubes mr-3 text-primary fa-fw"></i>
+              Organizations
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/about_us" class="nav-link text-dark" id="about-us-link">
+              <i class="fa fa-cubes mr-3 text-primary fa-fw"></i>
+              About Us
+            </a>
+          </li>
+          <li class="nav-item">
+            <form class="form-inline my-2 my-lg-0" action="#">
+              <div id="search-container">
+                <input class="form-control mr-sm-2" type="text" name="keyword"
+                      placeholder="Search" aria-label="Search" id="search-box">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit" id="search-btn">
+                  Go
+                </button>
+              </div>
+            </form>
+          </li>
+        </ul>
+      </div>
+      
+      <i class="fa fa-th-large mr-3 text-primary fa-fw"></i>
+      <% if current_user %>
+        Signed in as <%= current_user.name %> | <%= link_to "Logout", '/logout' %>
+      <% else %>
+        <%= link_to 'Login', '/login' %> | <%= link_to 'Signup', '/signup' %>
+      <% end %>
+
+      <div class="mission-stmt d-none">
+        <p class="text-gray font-weight-bold text-uppercase px-3 small pb-4 mb-0">
+          Mission Statement
+        </p>
+        <p class="quotation">
+          We bring transparent, accurate and timely date to you in this pandemic era.
+        </p>
+      </div>
+    </div>
+
+    <!-- Page Content Holder -->
+    <div class="page-content p-2" id="content">
+      <div class="container">
+        <%= yield %>
+      </div>
+    </div>
+  </body>
+</html>

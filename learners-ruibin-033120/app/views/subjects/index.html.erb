@@ -1,0 +1,103 @@
+<style>
+.card {
+  width: 20rem;
+}
+.card-title {
+  margin-top: 20px;
+}
+.card-subtitle {
+  margin-bottom: 20px;
+}
+.card-text {
+  margin-top: 20px;
+}
+.no-underline {
+  text-decoration: none !important
+}
+</style>
+<script>
+$(document).ready(function() {
+    /* Change navbar focus */
+    $("#subjects-link").addClass("bg-light");
+    $("#orgs-link").removeClass("bg-light");
+    $("#about-us-link").removeClass("bg-light");
+
+    $(".card").hover(
+        function () {
+            $(this).addClass('shadow-lg');
+        }, function () {
+            $(this).removeClass('shadow-lg');
+        }
+    );
+});
+</script>
+
+<div class="row">
+  <div class="col-md-4">
+    <a class="card border-primary shadow no-underline" href="/subject">
+      <div class="card-body">
+        <h4 class="card-title text-primary">Calculus II</h4>
+        <h6 class="card-subtitle mb-2 text-muted">Columbia University</h6>
+        <p class="card-text text-secondary">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a class="card border-success shadow no-underline" href="/subject">
+      <div class="card-body">
+        <h4 class="card-title text-success">Calculus II</h4>
+        <h6 class="card-subtitle mb-2 text-muted">Columbia University</h6>
+        <p class="card-text text-secondary">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a class="card border-danger shadow no-underline" href="/subject">
+      <div class="card-body">
+        <h4 class="card-title text-danger">Calculus II</h4>
+        <h6 class="card-subtitle mb-2 text-muted">Columbia University</h6>
+        <p class="card-text text-secondary">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a class="card border-warning shadow no-underline" href="/subject">
+      <div class="card-body text-warning">
+        <h4 class="card-title">Calculus II</h4>
+        <h6 class="card-subtitle mb-2 text-muted">Columbia University</h6>
+        <p class="card-text text-secondary">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a class="card border-info shadow no-underline" href="/subject">
+      <div class="card-body text-info">
+        <h4 class="card-title">Calculus II</h4>
+        <h6 class="card-subtitle mb-2 text-muted">Columbia University</h6>
+        <p class="card-text text-secondary">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+      </div>
+    </a>
+  </div>
+</div>
+
+<%= link_to 'Create a Subject', new_subject_path %>
+
+<table>
+  <tr>
+    <th>Title</th>
+    <th>Description</th>
+    <th colspan="3"></th>
+  </tr>
+ 
+  <% @subjects.each do |subject| %>
+    <tr>
+      <td><%= subject.title %></td>
+      <td><%= subject.description %></td>
+      <td><%= link_to 'Show', subject_path(subject) %></td>
+      <td><%= link_to 'Edit', edit_subject_path(subject) %></td>
+      <td><%= link_to 'Destroy', subject_path(subject),
+              method: :delete,
+              data: { confirm: 'Are you sure?' } %></td>
+    </tr>
+  <% end %>
+</table>

@@ -1,0 +1,42 @@
+<%# 
+
+Partials are reusable parts of views.
+
+By convention, partial files are prefixed with an _underscore.
+
+ %>
+
+<%# pass in 'model: @subject' fills in old values.
+ pass in 'scope: :subject' only create empty form.  
+ check docs on 'form_with' for more info. %>
+<%= form_with model: @subject, local: true do |form| %>
+ 
+  <% if @subject.errors.any? %>
+    <div id="error_explanation">
+      <h2>
+        <%= pluralize(@subject.errors.count, "error") %> prohibited
+        this subject from being saved:
+      </h2>
+      <ul>
+        <% @subject.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+ 
+  <p>
+    <%= form.label :title %><br>
+    <%= form.text_field :title %>
+  </p>
+ 
+  <p>
+    <%= form.label :description %><br>
+    <%= form.text_area :description %>
+  </p>
+ 
+  <p>
+    <%= form.submit %>
+  </p>
+ 
+<% end %>
