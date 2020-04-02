@@ -37,10 +37,10 @@ InterfaceBody:
 	| METHOD ID COLON typ ARROW typ(*  change to typeIdentifiers later *)
 
 /* typ:
-		|
-		|
-		|
-		| 
+          INT { Int }
+        | BOOL { Bool }
+        | STRING { String }
+	| UNIT { Unit }
 
 ImplementationDef:
 	  ImplementationConstructor
