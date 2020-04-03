@@ -16,7 +16,7 @@ rule token = parse
 	(*  General op *)
 	| "=="				 			 { EQ }
 	| "!="				 			 { NEQ }
-	| ">"				 				 { LGT } (* !!!!!!!!!????????? *)
+	| ">"				 				 { LGT } 
 	| "+"				 				 { ADD }
 	| "-"				 				 { SUB }
 	| "*"				 				 { MUL }

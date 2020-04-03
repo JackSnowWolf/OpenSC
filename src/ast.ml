@@ -4,7 +4,7 @@ type op = Add | Sub | Equal | Neq | Less | And | Or
 type typ = 
 	| Bool of bool
 	| Int of int 
-	| UInt of int 
+	| Uint of int 
 	| Address of string
 	| UNIT of unit
 
@@ -13,52 +13,48 @@ type lit =
 	| BooLit of bool
 	| StrLit of string
 	| AddressLit of string 
-	
+
+(*  need change *)
 type assignmentexpr = 
-	  MapAssign of string * string * lit 
-	| TypeAssign of string * typ
-	| RetAssign of typ * typ
-	| PointASsign of string * string
+	  MapAssign of string * typ list * typ 
+	| VarAssign of string * typ
+	| TypeAssign of typ * typ
+	| PointAssign of string * string
+	| EventAssign of string * string * typ list
 
 type param = 
-		Var of string
+		Var of string * typ
 
 type params =
 		Paras of param list
 
+(*  need change *)
 type expr =
 	| Assignment of assignmentexpr
 	| Log of string * params 
+	| Mapliteral of string * expr 
 	| Binop of expr * op * expr
 	| Literal of lit
-	| Mapliteral of string * expr 
-
-
-type typedidentifiers = 
-	| TypedIdentifierList of expr list
-
-
-type decl = 
-	| Bind of expr * string
 
 type body = 
-	| Guard of expr 
-	| Storage of expr 
-	| Effects of expr 
-	| Returns of expr 
+	| Guard of string * expr list
+	| Storage of string * expr list
+	| Effects of string * expr list
+	| Returns of string * expr list
 
 type implementationDef = 
-	| Consturctor of string * string * expr * body
-	| Method of string * string * expr * body
+	| Consturctor of string * params * body (* body list? *)
+	| Method of string * params * expr * body list
 
 
-type interfacesDefs = 
-	| Interfacedef of decl list
-		
 
-type Interfacedef =
-	| 
+type interfacesDef = 
+	| Stroagedef_interface of string * typ
+	|	Mapdef_interface of string * typ list * typ list
+	| Eventdef_interface of string * string * typ list
+	| Constructordef_interface of string * typ * typ
+	| Methoddef_interface of string * typ list * typ
 	| End of string
 
-type program = interfacesDefs * implementationDef
+type program = interfacesDef list * implementationDef
 
