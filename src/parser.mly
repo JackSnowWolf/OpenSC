@@ -4,15 +4,15 @@
 %token SIGNATURE END STROAGE EVENT OF METHOD CONSTRUCTOR ENVIRONMENT GUARD EFFECTS LOGS RETURNS MAP
 %token ASSIGN ARROW MAPASSIGN ASSIGN COLON SEMI PASSIGN
 %token LBRACE RBRACE LPAREN RPAREN LBRACK RBRACK
-(*  this part need to be revised  *)
+/*  this part need to be revised  */
 %token <string> NUMLITERAL UINTType
 %token <string> ID ADDRESS
 %token <unit> UNIT 
 %token <bool> BooLit
-(*  end of the part  *)
+/*  end of the part  */
 %token EOF
 
-(*   left .......... left associativity    *)
+/*   left .......... left associativity    */
 %start program
 %type <Ast.program> program
 
@@ -23,7 +23,7 @@ program:
 
 InterfacesDefs:
 	 { [] }   /* nothing */ 
-	|InterfacesDef InterfacesDefs {$1 :: $2} (* I am not sure need to confirmed! *)
+	|InterfacesDef InterfacesDefs {$1 :: $2} /* I am not sure need to confirmed! */
 
 InterfacesDef:
 	| InterfaceBody
