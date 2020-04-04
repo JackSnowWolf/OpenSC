@@ -55,8 +55,8 @@ rule token = parse
 	| "effects"				 	 { EFFECTS }
 	| "logs"			  		 { LOGS }
 	| "returns"			 		 { RETURNS }
-	| digit+ as lem  { NUMLITERAL(int_of_string lem) }
-	| letter (digit | letter | '_')* as lem { ID(lem) }
+	| digits+ as lem  { NUMLITERAL(int_of_string lem) }
+	| letter (digits | letter | '_')* as lem { ID(lem) }
 	| eof { EOF }
 
 	and comment lvl = parse
