@@ -1,12 +1,12 @@
 %{ open Ast
 %}
 
-%token SIGNATURE END STROAGE EVENT OF METHOD CONSTRUCTOR ENVIRONMENT GUARD EFFECTS LOGS RETURNS MAP
-%token ASSIGN ARROW MAPASSIGN ASSIGN COLON SEMI PASSIGN
+%token SIGNATURE UINTTYPE STROAGE EVENT OF METHOD CONSTRUCTOR ENVIRONMENT GUARD EFFECTS LOGS RETURNS MAP UINTType 
+%token ASSIGN ARROW MAPASSIGN ASSIGN COLON SEMI PASSIGN COMMA
 %token LBRACE RBRACE LPAREN RPAREN LBRACK RBRACK
 /*  this part need to be revised  */
-%token <string> NUMLITERAL UINTType
-%token <string> ID ADDRESS
+%token <int> NUMLITERAL 
+%token <string> ID ADDRESSLIT END
 %token <unit> UNIT 
 %token <bool> BooLit
 /*  end of the part  */
@@ -19,30 +19,44 @@
 %%
 
 program:
-	 InterfacesDefs ImplementationDef eof { $1 }
+	 Defs EOF {$1}
+
+Defs:
+	|InterfacesDefs {$1}
+	/* |ImplementationDef {$1} */
+
+/* (owner : Address, spender : Address) */
+vdecl_list:
+  /*nothing*/ { [] }
+  | vdecl COMMA vdecl_list  {  Paras($1 :: $3) }
+
+vdecl:
+  ID COLON builtintypename { Var($1, $3) }
 
 InterfacesDefs:
 	 { [] }   /* nothing */ 
-	|InterfacesDef InterfacesDefs {$1 :: $2} /* I am not sure need to confirmed! */
+	|InterfacesDef InterfacesDefs {$1 :: $2} 
 
 InterfacesDef:
-	| InterfaceBody
-	| END {End $1}
+	| InterfaceBody {Interfacebody($1)}
+
+builtintypename:
+  | BooLit { BooLit{$1} }
+	| ADDRESSLIT {AddressLit{$1}}
+	| UINTTYPE { int }
 
 InterfaceBody:
-	| STROAGE ID COLON typ {Stroagedef_interface $2, $4}
-	| MAP ID COLON ADDRESS MAPASSIGN typ {MapAssign $2, $4, $6}
-	| EVENT ID ASSIGN ID OF typ {Eventdef_interface $2, $4, $6}
-	| CONSTRUCTOR ID COLON typ ARROW typ {Constructordef_interface $2, $4, $6}
-	| METHOD ID COLON typ ARROW typ {Methoddef_interface $2, $4, $6}
+	| STROAGE ID COLON builtintypename {TypeAssign (Id($2), $4)}
+	/* | MAP ID COLON ADDRESS MAPASSIGN builtintypename {MapAssign $2, $4, $6}
+	| EVENT ID ASSIGN ID OF builtintypename {Eventdef_interface $2, $4, $6}
+	| CONSTRUCTOR ID COLON builtintypename ARROW builtintypename {Constructordef_interface $2, $4, $6}
+	| METHOD ID COLON builtintypename ARROW builtintypename {Methoddef_interface $2, $4, $6}
+	| END {End_sep $1}  */
 
-typ:
-    INT { Int }
-  | BOOL { Bool }
-  | STRING { String }
-	| UNIT { Unit }
 
-ImplementationDef:
+
+
+/* ImplementationDef:
 	  ImplementationConstructor
 	 |ImplementationMethods
 
@@ -75,4 +89,4 @@ exprs:
 	| expr exprs
 
 expr:
-	|ID PASSIGN ID {PointAssign $1, $3}
+	|ID PASSIGN ID {PointAssign $1, $3} */

@@ -25,11 +25,11 @@ rule token = parse
 	| "or"				 				 { OR }			
 	(* end of general ops *)
 	(*  Types *)
-	| "UInt"			 			 { UINTType }
+	| "UInt"			 			 { UINTTYPE }
 	| "True"          	 { BooLit(true)  }
 	| "False"         	 { BooLit(false) }
 	| "Bool"          	 { BOOL }
-	| "Address"			 		 { ADDRESS }
+	| "Address"			 		 { ADDRESSLIT("ADDRESS") }
 	| "map"				 			 { MAP } (* as hash table *)
 	| "()"				 			 { UNIT }
 	(* end of types *)
@@ -42,9 +42,10 @@ rule token = parse
 	(* end of type of assignments *)
 	| '.'				 				 { POINT } (* Point for extract information *)
 	| ';'								 { SEMI }
+	| ','								 { COMMA } 
 	(*  ==========================================================  *)
 	| "signature"		 		 { SIGNATURE }		
-	| "end"				       { END }	(* separation op *)
+	| "end"				       { END("END") }	(* separation op *)
 	| "storage"			     { STROAGE }
 	| "event"			 			 { EVENT }
 	| "of"				 			 { OF }
