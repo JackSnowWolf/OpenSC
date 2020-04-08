@@ -90,24 +90,24 @@ let string_of_typ = function
   | UInt -> "uint"
   | Address -> "address"
   | UNIT -> "unit"
-  | Mapstruct -> "mapstruct"
+  | Mapstruct -> "map"
   | typ list -> 
   
  let rec string_of_expr = function
     Var(v) -> v
-  | Env() -> ""
-  | NumLit(
+  | Env(s) -> s
+  | NumLit(l) -> string_of_int l
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
   | AddressLit(v, e) -> v ^ " = " ^ string_of_expr e
-  | UnitLit of unit
+  | UnitLit() -> ""
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Var(v) -> v
   | Assign(e1, e2) -> "(" ^ string_of_expr e1 ^ ", " ^ string_of_expr e2 ^ ")"
   | PointAssign(e1, e2) -> "(" ^ string_of_expr e1 ^ ", " ^ string_of_expr e2 ^ ")"
  
-  let rec string_of_stmt = function
+ let rec string_of_stmt = function
     Block(stmts) ->
      "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^ "}\n"
   (*| Expr(expr) -> string_of_expr expr ^ ";\n";*)
