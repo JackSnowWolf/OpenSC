@@ -20,18 +20,20 @@ rule token = parse
 	| "+"				 				 { ADD }
 	| "-"				 				 { SUB }
 	| "*"				 				 { MUL }
-	| "/"				 				 { DIVIDE }
+	| "/"				 				 { DIV }
 	| "and"				 				 { AND }
 	| "or"				 				 { OR }			
 	(* end of general ops *)
 	(*  Types *)
+	| "Int"              { INTTYPE } 
 	| "UInt"			 			 { UINTTYPE }
-	| "True"          	 { BooLit(true)  }
-	| "False"         	 { BooLit(false) }
+	| "Unit"						 { UNITTYPE }
+	| "True"          	 { BOOLit(true)  }
+	| "False"         	 { BOOLit(false) }
 	| "Bool"          	 { BOOL }
-	| "Address"			 		 { ADDRESSLIT("ADDRESS") }
+	| "Address"			 		 { ADDRESS }
 	| "map"				 			 { MAP } (* as hash table *)
-	| "()"				 			 { UNIT }
+	| "null"				 			 { UNIT(unit) }
 	(* end of types *)
 	(* type of assignement*)
 	| "->"				 			 { ARROW }
@@ -45,7 +47,7 @@ rule token = parse
 	| ','								 { COMMA } 
 	(*  ==========================================================  *)
 	| "signature"		 		 { SIGNATURE }		
-	| "end"				       { END("END") }	(* separation op *)
+	(* | "end"				       { END("END") }	separation op *)
 	| "storage"			     { STROAGE }
 	| "event"			 			 { EVENT }
 	| "of"				 			 { OF }
