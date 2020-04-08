@@ -76,9 +76,9 @@ builtintype_paren:
 InterfaceBody:
 	STROAGE ID COLON builtintype_paren SEMI					        { StorageInterface ($2, $4) }
 	| MAP ID COLON builtintype_paren MAPASSIGN builtintype_paren SEMI		{ MapInterface $2, $4, $6 }
-	| EVENT ID ASSIGN ID OF builtintype_paren SEMI					{ Eventdef_interface $2, $4, $6 }
-	| CONSTRUCTOR ID COLON builtintype_paren ARROW builtintype SEMI			{ Constructordef_interface $2, $4, $6 }
-	| METHOD ID COLON builtintype_paren ARROW builtintype SEMI			{ Methoddef_interface $2, $4, $6 }
+	| EVENT ID ASSIGN ID OF builtintype_paren SEMI					{ EventInterface $2, $4, $6 }
+	| CONSTRUCTOR ID COLON builtintype_paren ARROW builtintype SEMI			{ ConstructorInterface $2, $4, $6 }
+	| METHOD ID COLON builtintype_paren ARROW builtintype SEMI			{ MethodInterface $2, $4, $6 }
 
 ImplementationConstructor:
 	CONSTRUCTOR ID LPAREN vdecl_list RPAREN LBRACE Body RBRACE
