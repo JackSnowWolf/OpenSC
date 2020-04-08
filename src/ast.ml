@@ -28,7 +28,6 @@ type ConstructorImplement =
 		fname: typ;
 		formals: field list;
 		body: block list;
-		rtyp: typ;
 	}	
 
 type MethodImplement = 
@@ -36,7 +35,6 @@ type MethodImplement =
 		fname: typ;
 		formals: field list;
 		body: block list;
-		rtyp: typ;
 	} 
 
 type field = 
