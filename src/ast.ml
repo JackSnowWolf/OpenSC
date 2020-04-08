@@ -71,3 +71,48 @@ type Implementation =
 
 type program = Interface * Implementation
 
+(* Pretty-printing functions *)
+
+let string_of_op = function
+    Add -> "+"
+  | Sub -> "-"
+  | Equal -> "=="
+  | Neq -> "!="
+  | Less -> "<"
+  | And -> "&&"
+  | Or -> "||"
+  | Mult -> "*"
+  | Div -> "/"
+  
+let string_of_typ = function
+    Bool -> "bool"
+  | Int -> "int"
+  | UInt -> "uint"
+  | Address -> "address"
+  | UNIT -> "unit"
+  | Mapstruct -> "mapstruct"
+  | typ list -> 
+  
+ let rec string_of_expr = function
+    Var(v) -> v
+  | Env() -> ""
+  | NumLit(
+  | BoolLit(true) -> "true"
+  | BoolLit(false) -> "false"
+  | AddressLit(v, e) -> v ^ " = " ^ string_of_expr e
+  | UnitLit of unit
+  | Call(f, el) ->
+      f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
+  | Var(v) -> v
+  | Assign(e1, e2) -> "(" ^ string_of_expr e1 ^ ", " ^ string_of_expr e2 ^ ")"
+  | PointAssign(e1, e2) -> "(" ^ string_of_expr e1 ^ ", " ^ string_of_expr e2 ^ ")"
+ 
+  let rec string_of_stmt = function
+    Block(stmts) ->
+     "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^ "}\n"
+  (*| Expr(expr) -> string_of_expr expr ^ ";\n";*)
+  | If(e, s, Block([])) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_stmt s
+  | If(e, s1, s2) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_stmt s1 ^ "else\n" ^ string_of_stmt s2
+  | Logs(v, e) -> v ^ " " ^ string_of_expr e
+  (*| While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s*)
+
