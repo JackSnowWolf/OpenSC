@@ -33,7 +33,7 @@
 %%
 
 program:
-	SIGNATURE ID LBRACE InterfacesDefs RBRACE Implement EOF { $2, $4 }
+	SIGNATURE ID LBRACE InterfacesDefs RBRACE Implements EOF { $2, $4 }
 
 /* (owner : Address, spender : Address) */
 vdecl_list:
@@ -117,19 +117,19 @@ Field:
 	GUARD LBRACE Stmts RBRACE 			{ Guard($3) }
 	| STROAGE LBRACE Stmts RBRACE 	{ Storage($3) }
 	| EFFECTS LBRACE Stmts RBRACE 	{ Effects($3) }
-	| RETURNS expr SEMI							{ Returns($2) }
+	| RETURNS lexpr SEMI							{ Returns($2) }
 
 Stmts:
 	{ [] }
 	| Stmt Stmts { $1 :: $2 }
 
 Stmt:
-    expr SEMI                               { Expr($1)      }
+    lexpr SEMI                               { Expr($1)      }
   | LBRACE Stmts RBRACE                 		{ Block($2) 		}
   /* if (condition) { Block1} else {Block2} */
   /* if (condition) Stmt else Stmt */
-  | IF LPAREN expr RPAREN Stmt ELSE Stmt    { If($3, $5, $7) }
-	| LOGS ID expr SEMI												{ Logs($2, $3) 	 }
+  | IF LPAREN lexpr RPAREN Stmt ELSE Stmt    { If($3, $5, $7) }
+	| LOGS ID lexpr SEMI												{ Logs($2, $3) 	 }
 
 
 args_opt:
@@ -137,28 +137,30 @@ args_opt:
   | args { $1 }
 
 args:
-  expr  { [$1] }
-  | expr COMMA args { $1::$3 }
+  lexpr  { [$1] }
+  | lexpr COMMA args { $1::$3 }
 
-expr:
-	ID															{ Var($1) }
-	| ENVIRONMENT										{ Env }
+lexpr:
+	expr														{ $1 }
 	| UNIT													{ UnitLit($1) }
 	| BOOLit												{ BooLit($1) }
 	| NUMLITERAL										{	NumLit($1) }
-	| expr LBRACK args_opt RBRACK  	{ AddressLit($1, $3) }
 	| expr LPAREN args_opt RPAREN  	{ Call($1, $3) }
-	| expr ASSIGN expr 							{ Assign($1, $3) }
-	| expr PASSIGN expr 						{ PointAssign($1, $3) }
+	| expr ASSIGN lexpr 							{ Assign($1, $3) }
+	| expr PASSIGN lexpr 						{ PointAssign($1, $3) }
 	| LPAREN expr RPAREN 						{ $2                   }
-	| expr PLUS   expr 							{ Binop($1, Add,   $3)   }
-  | expr MINUS  expr 							{ Binop($1, Sub,   $3)   }
-  | expr EQ     expr 							{ Binop($1, Equal, $3)   }
-  | expr NEQ    expr 							{ Binop($1, Neq,	 $3)   }
-  | expr LT     expr 							{ Binop($1, Less,  $3)   }
-  | expr AND    expr 							{ Binop($1, And,   $3)   }
-  | expr OR     expr 							{ Binop($1, Or,    $3)   }
-	| expr MUL    expr 							{ Binop($1, Mul,   $3)   }
-	| expr DIV    expr 							{ Binop($1, Div,   $3)   }
-	| expr POINT  expr            	{ Binop($1, Point, $3)   }
+	| expr PLUS   lexpr 							{ Binop($1, Add,   $3)   }
+  | expr MINUS  lexpr 							{ Binop($1, Sub,   $3)   }
+  | expr EQ     lexpr 							{ Binop($1, Equal, $3)   }
+  | expr NEQ    lexpr 							{ Binop($1, Neq,	 $3)   }
+  | expr LT     lexpr 							{ Binop($1, Less,  $3)   }
+  | expr AND    lexpr 							{ Binop($1, And,   $3)   }
+  | expr OR     lexpr 							{ Binop($1, Or,    $3)   }
+	| expr MUL    lexpr 							{ Binop($1, Mul,   $3)   }
+	| expr DIV    lexpr 							{ Binop($1, Div,   $3)   }
+
+expr:
+	ID															{ Var($1) }
+	| expr LBRACK LPAREN args_opt RPAREN RBRACK { AddressLit($1, $4) }
+	| ENVIRONMENT POINT ID				{ Env($3) }
 

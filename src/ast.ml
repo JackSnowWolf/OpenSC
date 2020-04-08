@@ -1,5 +1,5 @@
 
-type op = Add | Sub | Equal | Neq | Less | And | Or | Mul | Div | Point
+type op = Add | Sub | Equal | Neq | Less | And | Or | Mul | Div
 
 type typ = 
 	Bool
@@ -53,13 +53,16 @@ type stmt =
 	| Expr of Expr
   (* | While of expr * stmt *)
 
-type expr =
+type var = 
+	Var of string
+	| Env of string
 	| NumLit of int 
 	| BooLit of bool
-	| Env
-	| AddressLit of expr * expr
+	| AddressLit of string * expr
 	| UnitLit of unit
-	| Call of string * expr list
+
+type expr =
+	Call of string * expr list
 	| Var of string
 	| Assign of expr * expr
 	| PointAssign of expr * expr
