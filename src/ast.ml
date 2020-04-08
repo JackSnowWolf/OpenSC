@@ -53,16 +53,14 @@ type stmt =
 	| Expr of Expr
   (* | While of expr * stmt *)
 
-type var = 
+type expr =
 	Var of string
 	| Env of string
 	| NumLit of int 
 	| BooLit of bool
 	| AddressLit of string * expr
 	| UnitLit of unit
-
-type expr =
-	Call of string * expr list
+	| Call of string * expr list
 	| Var of string
 	| Assign of expr * expr
 	| PointAssign of expr * expr
