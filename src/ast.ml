@@ -8,8 +8,12 @@ type typ =
 	| UNIT of unit
 	| Mapstruct of string * string
 
+
+(* Need change *)
+type ocamlbuiltin = Int
+
 type param = 
-		Var of string * typ 
+		Var of string * ocamlbuiltin 
 
 type expr =
 	| NumLit of int 
@@ -20,8 +24,8 @@ type expr =
 	| TypeAssign of string * typ
 	| MapAssign of string * typ * typ 
 	(* | MapAssigns of string * typ list * typ  *)
-	| PointAssign of string * expr
-	| Event of string * typ
+	| PointAssign of expr * expr
+	| Event of string * typ list
 	| Binop of expr * op * expr
 	| Constructorexpr of string * typ * typ 
 	| Methodexpr of string * typ  * typ 
@@ -33,10 +37,10 @@ type stmt =
 	| Return of expr
 
 type consturctor_def ={
-	fname: string;
-	formals: param list;
-	storage: expr list;
-	body: stmt list;
+	name: expr;
+	params: param list;
+	consturctor_body: expr list;
+	return_type: typ;
 }
 
 type method_def = {
@@ -58,7 +62,7 @@ type interface_def = {
 	| Interfacebody of expr list
 	| Implementation of expr list  *)
 
-type program = interface_def list
+type program = interface_def list * consturctor_def list
 (* type program = interface_def list * consturctor_def * method_def list  *)
 
 (* pretty printing *)
@@ -71,6 +75,9 @@ let string_of_op = function
   | And -> "&&"
 	| Or -> "||"
 
+let string_of_builtin = function
+		Int -> "int"
+	
 let rec string_of_typ = function
 		Bool(x) -> "bool" ^ string_of_bool x
 	| Int(x) -> "int" ^ string_of_int x
@@ -80,7 +87,7 @@ let rec string_of_typ = function
 	| Mapstruct(x, y) -> x ^ "I am mapping struct " ^ y
 
 let string_of_param = function
-		Var(x, t) -> x ^ string_of_typ t
+		Var(x, t) -> x ^ string_of_builtin t
 
 let rec string_of_expr = function
 		NumLit(x) -> string_of_int x
@@ -89,8 +96,8 @@ let rec string_of_expr = function
 	| StrLit(x) -> x
 	| TypeAssign(x, y)-> "Type Assign: " ^ x  ^ string_of_typ y
 	| MapAssign(x, t1, t2) -> "Map assign: " ^ x ^ (string_of_typ t1) ^ (string_of_typ t2)
-	| PointAssign(x, e) -> x ^ (string_of_expr e)
-	| Event(x, ty) -> x ^ string_of_typ ty
+	| PointAssign(x, e) -> string_of_expr x ^ (string_of_expr e)
+	| Event(x, ty) -> x ^ String.concat "" (List.map string_of_typ ty) 
 	| Binop(e1, op, e2) ->  (string_of_expr e1) ^ (string_of_op op) ^ (string_of_expr e2)
 	| Constructorexpr(x, ty1, ty2) -> x ^ string_of_typ ty1 ^  string_of_typ ty2
 	| Methodexpr(x, ty1, ty2) -> x ^ string_of_typ ty1 ^ string_of_typ ty2
@@ -106,10 +113,15 @@ let string_of_interfacedef interfacedecl =
 	string_of_expr interfacedecl.signaturename ^ " " ^
   String.concat "" (List.map string_of_expr interfacedecl.interfacebody)
 
-	
+let string_of_constructordef constructordecl = 
+	string_of_expr constructordecl.name ^ " " ^  
+	String.concat "" (List.map string_of_param constructordecl.params) ^ 
+	String.concat "" (List.map string_of_expr constructordecl.consturctor_body) ^
+	" " ^ string_of_typ constructordecl.return_type
 
-let string_of_program (interfaces) =
+
+let string_of_program (interfaces, constructors) =
 	"\n\nParsed program: \n\n" ^
-	String.concat "" (List.map string_of_interfacedef interfaces) ^ "\n" ^ "Yeah"
-	(* String.concat "\n" (List.map string_of_constructordef constructors) ^ "\n" ^
-	String.concat "\n" (List.map string_of_methoddef methods) *)
+	String.concat "" (List.map string_of_interfacedef interfaces) ^ "\n"  ^
+  String.concat "\n" (List.map string_of_constructordef constructors) ^ "\n" ^  "Yeah"
+	(* String.concat "\n" (List.map string_of_methoddef methods) *)

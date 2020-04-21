@@ -56,6 +56,8 @@ rule token = parse
 	| "effects"				 	 { EFFECTS }
 	| "logs"			  		 { LOGS }
 	| "returns"			 		 { RETURNS }
+	(* NEED more type *)
+	| "int"    					{ INT }
 	| digits+ as lem  { NUMLITERAL(int_of_string lem) }
 	| letter (digits | letter | '_')* as lem { ID(lem) }
 	| eof { EOF }

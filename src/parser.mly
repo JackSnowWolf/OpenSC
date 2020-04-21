@@ -5,6 +5,7 @@
 %token ASSIGN ARROW MAPASSIGN ASSIGN COLON SEMI PASSIGN COMMA POINT
 %token LBRACE RBRACE LPAREN RPAREN LBRACK RBRACK 
 %token EQ NEQ LGT ADD SUB MUL DIVIDE AND OR BOOL
+%token INT
 %token <int> NUMLITERAL 
 %token <string> ID ADDRESSLIT END
 %token <string> UNIT 
@@ -22,20 +23,26 @@ program:
 
 defs:
    /* nothing */ 
-	 {( [] )}/* { ([], [], [] )} */
-	| interfacedecl defs{$1 :: $2}
-	/* | interfacedecl defs { (($1 :: fst $3), snd $3) } */
-	/* | constructordecl RBRACE decls { (($1 :: fst $3), snd $3) }
-	| methoddecl decls { (fst $2, ($1 :: snd $2)) } */
+	 {( [], [] )}/* { ([], [], [] )} */
+	/* | interfacedecl defs{$1 :: $2} */
+	| interfacedecl defs { (($1 :: fst $2), snd $2) }
+	| constructordecl defs { (fst $2, ($1 :: snd $2)) }
+	/* | methoddecl decls { (fst $2, ($1 :: snd $2)) } */
 
 
 /* (owner : Address, spender : Address) */
 param_list:
   /*nothing*/ { [] }
-  | param COMMA param_list  {($1 :: $3) }
+	| param { [$1] }
+  | param COMMA param_list  { $1 :: $3 }
+
+
+typ:
+    INT   { Int   }
+
 
 param:
-  ID COLON builtintypename { Var($1, $3) }
+  ID COLON typ { Var($1, $3) }
 
 id_ok:
 	| ID {Id($1)}
@@ -51,7 +58,9 @@ interfacedecl:
 
 
 builtintypenames:
-	| builtintypename builtintypenames {($1 :: $2) }
+  /*nothing*/ { [] }
+	|	builtintypename {[$1]}
+	| builtintypename COMMA builtintypenames { $1 :: $3 }
 
 builtintypename:
   | BooLit { Bool($1) }
@@ -71,39 +80,19 @@ interfaceBody:
 	| METHOD ID COLON builtintypename ARROW builtintypename SEMI{Methodexpr ($2, $4, $6)} 
 
 
+constructordecl:
+	CONSTRUCTOR id_ok LPAREN param_list RPAREN LBRACE STROAGE constructor_bodylist RETURNS builtintypename SEMI RBRACE
+	{
+		{
+			name = $2;
+			params = $4;
+			consturctor_body = $8;
+			return_type = $10;
+		}
+	}
+constructor_bodylist:
+		{ [] }
+	|constructor_body constructor_bodylist { $1::$2 }
 
-
-/* ImplementationDef:
-	  ImplementationConstructor
-	 |ImplementationMethods
-
-ImplementationConstructor:
-	| CONSTRUCTOR ID LPAREN inputs RPAREN Body {Consturctor $2, $4, $6}
-	
-ImplementationMethods:
-	 ImplementationMethod 
-	|ImplementationMethod ImplementationMethods
-
-ImplementationMethod:
-	|METHOD ID inputs Body
-
-
-inputs:
-	| input 
-	| input inputs
-
-input:
-	| ID COLON type
-
-Body:
-	 GUARD exprs
-	|ImplementationSTORAGE exprs  
-	|EFFECTS exprs 
-	|RETURNS exprs 
-
-exprs:
-	| expr 
-	| expr exprs
-
-expr:
-	|ID PASSIGN ID {PointAssign $1, $3} */
+constructor_body:
+	| id_ok PASSIGN id_ok SEMI {PointAssign($1, $3)}
