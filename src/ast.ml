@@ -90,7 +90,7 @@ let rec string_of_expr = function
 	| TypeAssign(x, y)-> "Type Assign: " ^ x  ^ string_of_typ y
 	| MapAssign(x, t1, t2) -> "Map assign: " ^ x ^ (string_of_typ t1) ^ (string_of_typ t2)
 	| PointAssign(x, e) -> x ^ (string_of_expr e)
-	| Event(x, ty) -> x ^ (List.map string_of_typ ty) 
+	| Event(x, ty) -> x ^ string_of_typ ty
 	| Binop(e1, op, e2) ->  (string_of_expr e1) ^ (string_of_op op) ^ (string_of_expr e2)
 	| Constructorexpr(x, ty1, ty2) -> x ^ string_of_typ ty1 ^  string_of_typ ty2
 	| Methodexpr(x, ty1, ty2) -> x ^ string_of_typ ty1 ^ string_of_typ ty2
