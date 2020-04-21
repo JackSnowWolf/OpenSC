@@ -21,7 +21,7 @@ type expr =
 	| MapAssign of string * typ * typ 
 	(* | MapAssigns of string * typ list * typ  *)
 	| PointAssign of string * expr
-	| Event of string * typ list
+	| Event of string * typ
 	| Binop of expr * op * expr
 	| Constructorexpr of string * typ * typ 
 	| Methodexpr of string * typ  * typ 
