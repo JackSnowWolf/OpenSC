@@ -1,4 +1,3 @@
-
 type op = Add | Sub | Equal | Neq | Less | And | Or
 
 type typ = 
@@ -10,82 +9,107 @@ type typ =
 	| Mapstruct of string * string
 
 type param = 
-		Var of string * typ
-
-type params =
-		Paras of param list 
+		Var of string * typ 
 
 type expr =
 	| NumLit of int 
 	| BooLit of bool
-	| StrLit of string
-	| AddressLit of string
 	| Id of string
-	| TypeAssign of string * string
+	| StrLit of string
+	(* | AddressLit of string list *)
+	| TypeAssign of string * typ
 	| MapAssign of string * typ * typ 
-	| MapAssigns of string * typ list * typ 
+	(* | MapAssigns of string * typ list * typ  *)
 	| PointAssign of string * expr
-	| Event of string * params
-  | Binop of expr * op * expr
-	| MethodDecl of string * params * expr list 
-	| ConstructorDef of string * param * expr list 
-	| End_sep of string
-(* 
-type methodbody = 
-	| Guard of expr list
-	| Storage of expr list
-	| Effects of expr list
-	| Returns of expr list
- *)
-
-type decls = 
-	| Interfacebody of expr list
-	| Implementation of expr list 
-
-
-type program = decls list
-
-
-(*  need change *)
-(* type assignmentexpr = 
-	  MapAssign of string * typ list * typ 
-	| VarAssign of string * typ
-	| TypeAssign of typ * typ
-	| PointAssign of string * string
-	| EventAssign of string * string * typ list
-
-type param = 
-		Var of string * typ
-
-type params =
-		Paras of param list *)
-
-(*  need change *)
-(* type expr =
-	| Assignment of assignmentexpr
-	| Log of string * params 
-	| Mapliteral of string * expr 
+	| Event of string * typ list
 	| Binop of expr * op * expr
-	| Literal of lit
+	| Constructorexpr of string * typ * typ 
+	| Methodexpr of string * typ  * typ 
 
-type body = 
-	| Guard of string * expr list
-	| Storage of string * expr list
-	| Effects of string * expr list
-	| Returns of string * expr list
+(* control flow statement: if, while *)
+type stmt =
+		Block of stmt list
+	|	Expr of expr
+	| Return of expr
 
-type implementationDef = 
-	| Consturctor of string * params * body
-	| Method of string * params * expr * body list
+type consturctor_def ={
+	fname: string;
+	formals: param list;
+	storage: expr list;
+	body: stmt list;
+}
+
+type method_def = {
+	fname: string;
+	formals: param list;
+	guard: expr list;
+	storage: expr list;
+	effects: expr list;
+	returns: expr list;
+}
+
+type interface_def = {
+	signaturename: expr;
+	interfacebody: expr list;
+}
 
 
+(* type decls = 
+	| Interfacebody of expr list
+	| Implementation of expr list  *)
 
-type interfacesDef = 
-	| Stroagedef_interface of lit * typ
-	|	Mapdef_interface of lit * typ list * typ list
-	| Eventdef_interface of lit * lit * typ list
-	| Constructordef_interface of string * typ * typ
-	| Methoddef_interface of string * typ list * typ
+type program = interface_def list
+(* type program = interface_def list * consturctor_def * method_def list  *)
 
-type program = interfacesDef list * implementationDef *)
+(* pretty printing *)
+let string_of_op = function
+    Add -> "+"
+  | Sub -> "-"
+  | Equal -> "=="
+  | Neq -> "!="
+  | Less -> "<"
+  | And -> "&&"
+	| Or -> "||"
 
+let rec string_of_typ = function
+		Bool(x) -> "bool" ^ string_of_bool x
+	| Int(x) -> "int" ^ string_of_int x
+	| Uint(x) -> "uint" ^ string_of_int x
+	| Address(x) -> "address" ^ x
+	| UNIT(x) -> "unit->void"
+	| Mapstruct(x, y) -> x ^ "I am mapping struct " ^ y
+
+let string_of_param = function
+		Var(x, t) -> x ^ string_of_typ t
+
+let rec string_of_expr = function
+		NumLit(x) -> string_of_int x
+	| BooLit(x) -> string_of_bool x
+	| Id(x) -> "I am ID" ^ x
+	| StrLit(x) -> x
+	| TypeAssign(x, y)-> "Type Assign: " ^ x  ^ string_of_typ y
+	| MapAssign(x, t1, t2) -> "Map assign: " ^ x ^ (string_of_typ t1) ^ (string_of_typ t2)
+	| PointAssign(x, e) -> x ^ (string_of_expr e)
+	| Event(x, ty) -> x ^ (List.map string_of_typ ty) 
+	| Binop(e1, op, e2) ->  (string_of_expr e1) ^ (string_of_op op) ^ (string_of_expr e2)
+	| Constructorexpr(x, ty1, ty2) -> x ^ string_of_typ ty1 ^  string_of_typ ty2
+	| Methodexpr(x, ty1, ty2) -> x ^ string_of_typ ty1 ^ string_of_typ ty2
+	
+
+(* let string_of_expr = function
+		NumLit(l) -> string_of_int l
+	| BooLit(true) -> "true"
+	| BooLit(false) -> "false"
+	| Id(s) -> s *)
+
+let string_of_interfacedef interfacedecl =
+	string_of_expr interfacedecl.signaturename ^ " " ^
+  String.concat "" (List.map string_of_expr interfacedecl.interfacebody)
+
+	
+
+let string_of_program (interfaces) =
+	"\n\nParsed program: \n\n" ^
+	String.concat "" (List.map string_of_interfacedef interfaces) ^ "\n" ^ "Yeah"
+	(* String.concat "\n" (List.map string_of_constructordef constructors) ^ "\n" ^
+	String.concat "\n" (List.map string_of_methoddef methods) *)

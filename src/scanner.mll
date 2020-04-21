@@ -31,7 +31,7 @@ rule token = parse
 	| "Bool"          	 { BOOL }
 	| "Address"			 		 { ADDRESSLIT("ADDRESS") }
 	| "map"				 			 { MAP } (* as hash table *)
-	| "()"				 			 { UNIT }
+	| "void"				 			 { UNIT("void") } (* instead of () use void *)
 	(* end of types *)
 	(* type of assignement*)
 	| "->"				 			 { ARROW }
@@ -45,7 +45,7 @@ rule token = parse
 	| ','								 { COMMA } 
 	(*  ==========================================================  *)
 	| "signature"		 		 { SIGNATURE }		
-	| "end"				       { END("END") }	(* separation op *)
+	(* | "end"				       { END("END") }	separation op *)
 	| "storage"			     { STROAGE }
 	| "event"			 			 { EVENT }
 	| "of"				 			 { OF }
