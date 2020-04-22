@@ -1,0 +1,13 @@
+signature SimpleStorage {
+    UInt storedData;
+}
+
+method set(x: UInt) {
+	storage
+    	storedData = x;
+	returns ();
+}
+
+method get(){
+    returns storedData;
+}
