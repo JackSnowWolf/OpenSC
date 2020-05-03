@@ -25,11 +25,11 @@ rule token = parse
 	| "or"				 				 { OR }			
 	(* end of general ops *)
 	(*  Types *)
-	| "UInt"			 			 { UINTTYPE }
+	| "UInt"			 			 { UINTTYPE("uint") }
 	| "True"          	 { BooLit(true)  }
 	| "False"         	 { BooLit(false) }
 	| "Bool"          	 { BOOL }
-	| "Address"			 		 { ADDRESSLIT("ADDRESS") }
+	| "Address"			 		 { ADDRESSTYPE("ADDRESS") }
 	| "map"				 			 { MAP } (* as hash table *)
 	| "void"				 			 { UNIT("void") } (* instead of () use void *)
 	(* end of types *)
@@ -46,7 +46,7 @@ rule token = parse
 	(*  ==========================================================  *)
 	| "signature"		 		 { SIGNATURE }		
 	(* | "end"				       { END("END") }	separation op *)
-	| "storage"			     { STROAGE }
+	| "storage"			     { STORAGE }
 	| "event"			 			 { EVENT }
 	| "of"				 			 { OF }
 	| "method"			 		 { METHOD }
@@ -57,6 +57,7 @@ rule token = parse
 	| "logs"			  		 { LOGS }
 	| "returns"			 		 { RETURNS }
 	(* NEED more type *)
+	| '"' (([^'"']*) as s) '"'  { STRLIT(s) }
 	| "int"    					{ INT }
 	| digits+ as lem  { NUMLITERAL(int_of_string lem) }
 	| letter (digits | letter | '_')* as lem { ID(lem) }
