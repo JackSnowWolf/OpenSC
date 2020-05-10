@@ -55,13 +55,14 @@ arg_list:
 
 argument:
 	| ID {Id($1)}
+	| ENVIRONMENT POINT ID {EnvLit($1, $3)}
+
 
 param:
-  ID COLON type_ok { Var($1, $3) }
+  ID COLON type_ok { Var(Id($1), $3) }
 
 id_ok:
 	| ID {Id($1)}
-	| ENVIRONMENT {EnvLit($1)}
 
 interfacedecl:
 	SIGNATURE id_ok LBRACE interfaceBody_list RBRACE
@@ -91,9 +92,10 @@ type_ok:
 
 
 literal:
-  | BooLit { BooLit($1) }
+  | BooLit { BoolLit($1) }
 	| NUMLITERAL { NumLit($1) }
 	| STRLIT { StrLit($1) }
+
 
 interfaceBody_list:
 		{ [] }
@@ -101,11 +103,11 @@ interfaceBody_list:
 
 /* TODO types !!  */
 interfaceBody:
-	| STORAGE ID COLON type_ok SEMI {TypeAssign (Id($2), $4)}
-	| MAP ID COLON LPAREN types_ok RPAREN MAPASSIGN types_ok SEMI{MapAssign (Id($2), Mapstruct($5, $8))}
-	| EVENT ID ASSIGN ID OF LPAREN types_ok RPAREN SEMI {Event ($2, $7)}
-	| CONSTRUCTOR ID COLON type_ok ARROW type_ok SEMI{Constructorexpr ($2, $4, $6)}
-	| METHOD ID COLON LPAREN types_ok RPAREN ARROW type_ok SEMI{Methodexpr (Id($2), $5, $8)} 
+	| STORAGE ID COLON type_ok SEMI {TypeAssigndecl (Id($2), $4)}
+	| MAP ID COLON LPAREN types_ok RPAREN MAPASSIGN types_ok SEMI{MapAssigndecl (Id($2), Mapstruct($5, $8))}
+	| EVENT ID ASSIGN ID OF LPAREN types_ok RPAREN SEMI {Eventdecl (Id($2), $7)}
+	| CONSTRUCTOR ID COLON type_ok ARROW type_ok SEMI{Constructordecl (Id($2), $4, $6)}
+	| METHOD ID COLON LPAREN types_ok RPAREN ARROW type_ok SEMI{Methodecls (Id($2), $5, $8)} 
 
 
 constructordecl:
@@ -123,8 +125,8 @@ constructor_bodylist:
 	|constructor_body constructor_bodylist { $1::$2 }
 
 constructor_body:
-	| id_ok PASSIGN id_ok SEMI {PointAssign($1, $3)}
-	| id_ok LBRACK id_ok POINT id_ok RBRACK PASSIGN id_ok SEMI {EnvironmentAssign($1, $3, $5, $8)}
+	| id_ok PASSIGN id_ok SEMI {Binop(Literalexpr($1), PASSIGN , Literalexpr($3))}
+	| id_ok LBRACK arg_list RBRACK PASSIGN id_ok SEMI {Binop(Mapexpr($1, $3), PASSIGN, Literalexpr($6))}
 
 methoddecls:
 		{ [] }
@@ -152,21 +154,20 @@ guard_bodylist:
 	|guard_body guard_bodylist { $1::$2 }
 		
 guard_body:
-	   | id_ok LGT NUMLITERAL SEMI { Binop($1, LGT, NumLit($3)) }
-		 | id_ok EQ NUMLITERAL SEMI { Binop($1, Equal, NumLit($3)) }
+	   | id_ok LGT literal SEMI { Binop(Literalexpr($1), LGT, Literalexpr($3)) }
+		 | id_ok EQ literal SEMI { Binop(Literalexpr($1), Equal, Literalexpr($3)) }
 		 /* | id_ok POINT id_ok NUMLITERAL SEMI {ENVRbinop} */
-		 | id_ok RGT NUMLITERAL SEMI  { Binop($1, RGT, NumLit($3)) }
-		 | id_ok LGTEQ NUMLITERAL SEMI { Binop($1, LGTEQ, NumLit($3)) }
-		 | id_ok RGTEQ NUMLITERAL SEMI { Binop($1, RGTEQ, NumLit($3)) }
-		 | id_ok POINT id_ok LGT NUMLITERAL SEMI { EnvironmentBinop($1, $3, LGT, NumLit($5)) }
+		 | id_ok RGT literal SEMI  { Binop(Literalexpr($1), RGT, Literalexpr($3)) }
+		 | id_ok LGTEQ literal SEMI { Binop(Literalexpr($1), LGTEQ, Literalexpr($3)) }
+		 | id_ok RGTEQ literal SEMI { Binop(Literalexpr($1), RGTEQ, Literalexpr($3)) }
 
 storage_bodylist:
 		{ [] }
 	|storage_body storage_bodylist { $1::$2 }
 
 storage_body:
-	| id_ok PASSIGN id_ok SEMI {PointAssign($1, $3)}
-	| id_ok LBRACK id_ok POINT id_ok RBRACK PASSIGN id_ok SEMI {EnvironmentAssign($1, $3, $5, $8)}
+	| id_ok PASSIGN id_ok SEMI {Binop(Literalexpr($1), PASSIGN, Literalexpr($3))}
+	/* | id_ok LBRACK id_ok POINT id_ok RBRACK PASSIGN id_ok SEMI {Binop(Mapexpr($1, EnvLit($3, $5)), PASSIGN, $8)} */
 
 effects_bodylist:
 		{ [] }
