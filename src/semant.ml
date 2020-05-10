@@ -37,11 +37,10 @@ let rec check_method_def md = function
 
 let rec check_interfaces interface = function
   | [] -> []
-  | interface.signaturename(e) -> check_sexpr e
-  | interface.interfacebody(e) -> 
-                          (match e with
-                              | [] -> []
-                              | hd :: tl -> check_sexpr hd :: check_interfaces tl)
+  | hd :: tl -> (match hd with 
+      | interface.signaturename(e) -> check_sexpr e
+      | interface.interfacebody(e) -> check_sexpr e 
+  ) :: check_interfaces tl 
 
 let rec check_implementations implementation = function
   | [] -> []
