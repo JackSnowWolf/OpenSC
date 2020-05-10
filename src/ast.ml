@@ -1,4 +1,4 @@
-type op = Add | Sub | Equal | Neq | Less | And | Or | LGT
+type op = Add | Sub | Times | Divide | Equal | Neq | Less | And | Or | LGT | RGT | LGTEQ | RGTEQ
 
 type typ = 
 	| Bool 
@@ -6,7 +6,7 @@ type typ =
 	| Uint of string 
 	| Address of string
 	| Void of string
-	| Mapstruct of string * string
+	| Mapstruct of typ list * typ list
 
 
 (* Need change *)
@@ -15,6 +15,7 @@ type typ =
 (* type param =  *)
 
 type expr =
+	| EnvLit of string
 	| NumLit of int  (* number literal *)
 	| BooLit of bool
 	| StrLit of string
@@ -22,19 +23,21 @@ type expr =
 	| Var of string * typ 
 	(* | AddressLit of string list *)
 	| TypeAssign of expr * typ
-	| MapAssign of expr * typ * typ 
+	| MapAssign of expr * typ
 	(* | MapAssigns of string * typ list * typ  *)
+	| EnvironmentAssign of expr * expr * expr * expr
+	| EnvironmentBinop of expr * expr * op * expr
 	| PointAssign of expr * expr
 	| Event of string * typ list
 	| Binop of expr * op * expr
 	| Constructorexpr of string * typ * typ 
-	| Methodexpr of string * typ  * typ 
+	| Methodexpr of expr * typ list * typ 
 	| Logexpr of expr * expr list
 
 (* control flow statement: if, while ?? *)
 type stmt =
-		Block of stmt list
-	|	Expr of expr
+	  Block of stmt list
+	| Expr of expr
 	| Return of expr
 
 type consturctor_def ={
@@ -73,12 +76,17 @@ type program = interface_def list * implementation_def list
 let string_of_op = function
     Add -> "+"
   | Sub -> "-"
+  | Times -> "*"
+  | Divide -> "/"
   | Equal -> "=="
   | Neq -> "!="
   | Less -> "<"
   | And -> "&&"
-	| Or -> "||"
+  | Or -> "||"
 	| LGT -> ">"
+	| RGT -> "<"
+	| LGTEQ -> ">="
+	| RGTEQ -> "<="
 
 (* let string_of_builtin = function
 		Int -> "int"
@@ -92,7 +100,7 @@ let rec string_of_typ = function
 	| Uint(x) ->  x ^ " "
 	| Address(x) ->  x ^ " "
 	| Void(x) ->  x ^ " "
-	| Mapstruct(x, y) -> x ^ "I am mapping struct " ^ y ^ " "
+	| Mapstruct(x, y) ->  "I am mapping struct " ^ String.concat " " (List.map string_of_typ x) ^ String.concat " " (List.map string_of_typ y) ^ " "
 
 (* let string_of_param = function *)
 
@@ -101,15 +109,18 @@ let rec string_of_expr = function
 		NumLit(x) -> string_of_int x ^ " "
 	| BooLit(x) -> string_of_bool x ^ " "
 	| Id(x) -> "ID: " ^ x ^ " "
+	| EnvLit(x) -> "Envrionment: " ^ x ^ " "
 	| StrLit(x) -> x
 	| Var(x, t) -> x ^ string_of_typ t
 	| TypeAssign(x, y)-> "Type Assign: " ^ string_of_expr x  ^ " " ^ string_of_typ y ^ "\n"
-	| MapAssign(x, t1, t2) -> "Map assign: " ^ string_of_expr x ^ " " ^ (string_of_typ t1) ^ (string_of_typ t2) ^ "\n"
+	| MapAssign(x, t) -> "Map assign: " ^ string_of_expr x ^ " " ^ (string_of_typ t) ^ "\n"
+	| EnvironmentBinop (e1, e2, op, e3) -> "EnvironmentBinop " ^ string_of_expr e1 ^ string_of_expr e2 ^ string_of_op op ^ string_of_expr e3
+	| EnvironmentAssign (e1, e2, e3, e4) -> "Env assignement " ^ string_of_expr e1 ^string_of_expr e2 ^ string_of_expr e3 ^ string_of_expr e4 ^ "\n"
 	| PointAssign(x, e) -> "pointer assign: " ^string_of_expr x ^ " " ^ (string_of_expr e) ^ "\n"
 	| Event(x, ty) -> x ^ "Event: " ^ String.concat " " (List.map string_of_typ ty) ^ "\n"
 	| Binop(e1, op, e2) ->  "binary operation: " ^ (string_of_expr e1) ^ " " ^ " "  ^ (string_of_op op) ^ " " ^ (string_of_expr e2) ^ "\n"
 	| Constructorexpr(x, ty1, ty2) -> "constructor expr: " ^ " " ^ x ^ " " ^ string_of_typ ty1 ^ " " ^  string_of_typ ty2 ^ "\n"
-	| Methodexpr(x, ty1, ty2) -> "Method expr: " ^ x ^ " "  ^ string_of_typ ty1 ^ " " ^ string_of_typ ty2 ^ " " ^ "\n"
+	| Methodexpr(x, ty1, ty2) -> "Method expr: " ^ string_of_expr x ^ " "  ^ String.concat " " (List.map string_of_typ ty1)  ^ (string_of_typ ty2) ^ " " ^ "\n"
 	| Logexpr(e, el) -> "Log for event: " ^ " " ^ string_of_expr e ^ " " ^ String.concat " " (List.map string_of_expr el) ^ "\n"
 
 (* let string_of_expr = function

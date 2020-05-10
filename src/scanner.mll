@@ -17,6 +17,9 @@ rule token = parse
 	| "=="				 			 { EQ }
 	| "!="				 			 { NEQ }
 	| ">"				 				 { LGT } 
+	| ">="							 { LGTEQ }
+	| "<="							 { RGTEQ }
+	| "<"								 { RGT} 
 	| "+"				 				 { ADD }
 	| "-"				 				 { SUB }
 	| "*"				 				 { MUL }
@@ -51,7 +54,7 @@ rule token = parse
 	| "of"				 			 { OF }
 	| "method"			 		 { METHOD }
 	| "constructor"		 	 { CONSTRUCTOR }
-	| "Env"				 			 { ENVIRONMENT }
+	| "Env"				 			 { ENVIRONMENT("Env") }
 	| "guard"			 			 { GUARD }
 	| "effects"				 	 { EFFECTS }
 	| "logs"			  		 { LOGS }
