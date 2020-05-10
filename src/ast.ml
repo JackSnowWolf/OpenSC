@@ -29,8 +29,7 @@ type expr =
 
 type decls = 
 	| TypeAssigndecl of expr * typ
-	| MapAssigndecl of expr * typ
-	| Vardecl of expr * typ 
+	| MapAssigndecl of expr * (typ list) * typ
 	| Eventdecl of expr * typ list
 	| Constructordecl of expr * typ * typ 
 	| Methodecls of expr * typ list * typ
