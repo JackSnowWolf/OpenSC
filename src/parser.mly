@@ -125,8 +125,8 @@ constructor_bodylist:
 	|constructor_body constructor_bodylist { $1::$2 }
 
 constructor_body:
-	| id_ok PASSIGN id_ok SEMI {Binop(Literalexpr($1), PASSIGN , Literalexpr($3))}
-	| id_ok LBRACK arg_list RBRACK PASSIGN id_ok SEMI {Binop(Mapexpr($1, $3), PASSIGN, Literalexpr($6))}
+	| id_ok PASSIGN id_ok SEMI {Binop($1, PASSIGN , $3)}
+	| id_ok LBRACK arg_list RBRACK PASSIGN id_ok SEMI {Binop(Mapexpr($1, $3), PASSIGN, $6)}
 
 methoddecls:
 		{ [] }
@@ -154,19 +154,19 @@ guard_bodylist:
 	|guard_body guard_bodylist { $1::$2 }
 		
 guard_body:
-	   | id_ok LGT literal SEMI { Binop(Literalexpr($1), LGT, Literalexpr($3)) }
-		 | id_ok EQ literal SEMI { Binop(Literalexpr($1), Equal, Literalexpr($3)) }
+	   | id_ok LGT literal SEMI { Binop($1, LGT, $3) }
+		 | id_ok EQ literal SEMI { Binop($1, Equal, $3) }
 		 /* | id_ok POINT id_ok NUMLITERAL SEMI {ENVRbinop} */
-		 | id_ok RGT literal SEMI  { Binop(Literalexpr($1), RGT, Literalexpr($3)) }
-		 | id_ok LGTEQ literal SEMI { Binop(Literalexpr($1), LGTEQ, Literalexpr($3)) }
-		 | id_ok RGTEQ literal SEMI { Binop(Literalexpr($1), RGTEQ, Literalexpr($3)) }
+		 | id_ok RGT literal SEMI  { Binop($1, RGT, $3) }
+		 | id_ok LGTEQ literal SEMI { Binop($1, LGTEQ, $3) }
+		 | id_ok RGTEQ literal SEMI { Binop($1, RGTEQ, $3) }
 
 storage_bodylist:
 		{ [] }
 	|storage_body storage_bodylist { $1::$2 }
 
 storage_body:
-	| id_ok PASSIGN id_ok SEMI {Binop(Literalexpr($1), PASSIGN, Literalexpr($3))}
+	| id_ok PASSIGN id_ok SEMI {Binop($1, PASSIGN, $3)}
 	/* | id_ok LBRACK id_ok POINT id_ok RBRACK PASSIGN id_ok SEMI {Binop(Mapexpr($1, EnvLit($3, $5)), PASSIGN, $8)} */
 
 effects_bodylist:
