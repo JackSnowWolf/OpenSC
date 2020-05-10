@@ -10,11 +10,28 @@ module StringMap = Map.Make(String)
 let check_ids id = function
   [] -> []
   | hd :: tl -> []
+  
 
 (* need to implement *)
 let rec check_sexpr e = function
   [] -> []
-  | hd :: tl -> []
+  | hd :: tl -> 
+          (match hd with 
+   | e.envLit l -> SenvLit l
+   | e.numLit l -> SnumLit l
+   | e.booLit l -> SbooLit l
+   | e.strLit l -> SstrLit l
+   | e.Id x -> SId x
+   | e.var (s, t) -> Svar (s, t)
+   | e.typeAssign (e, t) -> StypeAssign((check_sexpr e), t)
+   | e.mapAssign (e, t1, t2) -> SmapAssign ((check_sexpr e), t1, t2)
+   | e.pointAssign (e1, e2) -> SpointAssign((check_sexpr e1), (check_sexpr e2))
+   | e.event (s, t) -> Sevent(s, t)
+   | e.binop (e1, op, e2) -> Sbinop((check_sexpr e1), op, (check_sexpr e2))
+   | e.constructorexpr (s, t1, t2) -> Sconstructorexpr(s, t1, t2)
+   | e.methodexpr (s, t1, t2) -> Smethodexpr(s, t1, t2)
+   ) :: check_sexpr tl 
+  
 
 let rec check_consturctor_def c = function
    [] -> []
