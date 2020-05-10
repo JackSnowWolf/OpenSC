@@ -119,7 +119,6 @@ let rec string_of_expr = function
 	| Var(x , t) -> "Var: " ^ string_of_expr x ^ string_of_typ t ^ " "
 	| TypeAssigndecl(l, t) -> "Type Assign: " ^ string_of_expr l  ^ " " ^ string_of_typ t ^ "\n"
 	| MapAssigndecl (l, t) -> "Map assign: " ^ string_of_expr l ^ " " ^ (string_of_typ t) ^ "\n"
-	| Vardecl(l, t) ->  "Var: " ^ string_of_expr l ^ string_of_typ t
 	| Eventdecl(l ,t) ->  "Event: " ^ (string_of_expr l) ^  String.concat " " (List.map string_of_typ t) ^ "\n"
 	| Constructordecl(l, t1, t2) ->"constructor expr: " ^ " " ^ string_of_expr l^ " " ^ string_of_typ t1 ^ " " ^  string_of_typ t2 ^ "\n"
 	| Methodecls (l, t1, t2) -> "Method expr: " ^ string_of_expr l ^ " "  ^ String.concat " " (List.map string_of_typ t1)  ^ (string_of_typ t2) ^ " " ^ "\n"
