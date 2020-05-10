@@ -29,9 +29,7 @@ program:
 /* | interfacedecl defs{$1 :: $2} */
 defs: 
    /* nothing */ 
-	 { ([], [] )} 
-	| interfacedecl defs { (($1 :: fst $2), snd $2) }
-	| implementationdecl defs { (fst $2, ($1 :: snd $2)) }
+	| interfacedecl implementationdecl { $1, $2 }
 
 implementationdecl:
 	constructordecl methoddecls
