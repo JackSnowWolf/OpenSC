@@ -1,14 +1,14 @@
 %{ open Ast
 %}
 
-%token SIGNATURE UINTTYPE STROAGE EVENT OF METHOD CONSTRUCTOR ENVIRONMENT GUARD EFFECTS LOGS RETURNS MAP UINTType STORAGE
+%token SIGNATURE UINTTYPE STROAGE EVENT OF METHOD CONSTRUCTOR GUARD EFFECTS LOGS RETURNS MAP UINTType STORAGE
 %token ASSIGN ARROW MAPASSIGN ASSIGN COLON SEMI PASSIGN COMMA POINT
 %token LBRACE RBRACE LPAREN RPAREN LBRACK RBRACK 
-%token EQ NEQ LGT ADD SUB MUL DIVIDE AND OR BOOL
+%token EQ NEQ LGT ADD SUB MUL DIVIDE AND OR BOOL LGTEQ RGTEQ RGT
 %token INT
 %token <int> NUMLITERAL 
 %token <string> ID ADDRESSTYPE END STRLIT UINTTYPE
-%token <string> UNIT 
+%token <string> UNIT ENVIRONMENT
 %token <bool> BooLit
 %token EOF
 
@@ -61,6 +61,7 @@ param:
 
 id_ok:
 	| ID {Id($1)}
+	| ENVIRONMENT {EnvLit($1)}
 
 interfacedecl:
 	SIGNATURE id_ok LBRACE interfaceBody_list RBRACE
@@ -70,7 +71,6 @@ interfacedecl:
 			interfacebody =  $4
 		}
 	}
-
 
 /* typ:
     INT   { Int  }
@@ -84,10 +84,10 @@ types_ok:
 /* do we need to map in type?  */
 type_ok:
     INT   { Int  }
-	| UINTTYPE { Uint($1) }
-  | BOOL  { Bool }
-	| ADDRESSTYPE {Address($1)}
-	| UNIT { Void($1) }
+   | UINTTYPE { Uint($1) }
+   | BOOL  { Bool }
+   | ADDRESSTYPE {Address($1)}
+   | UNIT { Void($1) }
 
 
 literal:
@@ -102,10 +102,10 @@ interfaceBody_list:
 /* TODO types !!  */
 interfaceBody:
 	| STORAGE ID COLON type_ok SEMI {TypeAssign (Id($2), $4)}
-	| MAP ID COLON type_ok MAPASSIGN type_ok SEMI{MapAssign (Id($2), $4, $6)}
+	| MAP ID COLON LPAREN types_ok RPAREN MAPASSIGN types_ok SEMI{MapAssign (Id($2), Mapstruct($5, $8))}
 	| EVENT ID ASSIGN ID OF LPAREN types_ok RPAREN SEMI {Event ($2, $7)}
 	| CONSTRUCTOR ID COLON type_ok ARROW type_ok SEMI{Constructorexpr ($2, $4, $6)}
-	| METHOD ID COLON type_ok ARROW type_ok SEMI{Methodexpr ($2, $4, $6)} 
+	| METHOD ID COLON LPAREN types_ok RPAREN ARROW type_ok SEMI{Methodexpr (Id($2), $5, $8)} 
 
 
 constructordecl:
@@ -124,6 +124,7 @@ constructor_bodylist:
 
 constructor_body:
 	| id_ok PASSIGN id_ok SEMI {PointAssign($1, $3)}
+	| id_ok LBRACK id_ok POINT id_ok RBRACK PASSIGN id_ok SEMI {EnvironmentAssign($1, $3, $5, $8)}
 
 methoddecls:
 		{ [] }
@@ -149,20 +150,23 @@ methoddecl:
 guard_bodylist:
 		{ [] }
 	|guard_body guard_bodylist { $1::$2 }
-
-
 		
 guard_body:
-	/* | id_ok POINT id_ok EQ NUMLITERAL SEMI {}  the comment is for new expr for address*/
-	/* | id_ok LBRACK id_ok RBRACK LGT id_ok SEMI { Binop() } */
-		 | id_ok LGT NUMLITERAL SEMI { Binop($1, LGT, NumLit($3)) }
+	   | id_ok LGT NUMLITERAL SEMI { Binop($1, LGT, NumLit($3)) }
+		 | id_ok EQ NUMLITERAL SEMI { Binop($1, Equal, NumLit($3)) }
+		 /* | id_ok POINT id_ok NUMLITERAL SEMI {ENVRbinop} */
+		 | id_ok RGT NUMLITERAL SEMI  { Binop($1, RGT, NumLit($3)) }
+		 | id_ok LGTEQ NUMLITERAL SEMI { Binop($1, LGTEQ, NumLit($3)) }
+		 | id_ok RGTEQ NUMLITERAL SEMI { Binop($1, RGTEQ, NumLit($3)) }
+		 | id_ok POINT id_ok LGT NUMLITERAL SEMI { EnvironmentBinop($1, $3, LGT, NumLit($5)) }
 
 storage_bodylist:
 		{ [] }
 	|storage_body storage_bodylist { $1::$2 }
 
 storage_body:
-	| id_ok PASSIGN literal SEMI {PointAssign($1, $3)}
+	| id_ok PASSIGN id_ok SEMI {PointAssign($1, $3)}
+	| id_ok LBRACK id_ok POINT id_ok RBRACK PASSIGN id_ok SEMI {EnvironmentAssign($1, $3, $5, $8)}
 
 effects_bodylist:
 		{ [] }

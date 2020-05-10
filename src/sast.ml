@@ -5,6 +5,7 @@ open Ast
 
   
 type sexpr =
+	| SenvLit of string
 	| SnumLit of int  (* number literal *)
 	| SbooLit of bool
 	| SstrLit of string
@@ -22,40 +23,40 @@ type sexpr =
 	| Slogexpr of sexpr * sexpr list
 
 (* control flow statement: if, while *)
-(* type sstmt =
+type sstmt =
 		Sblock of sstmt list
 	|	Sexpr of sexpr
   | Sreturn of sexpr
-   *)
-(* 
+
+
 type sconsturctor_def ={
 	name: sexpr;
 	params: sexpr list;
 	consturctor_body: sexpr list;
 	return_type: typ;
-} *)
+}
 
 
-(* type smethod_def = {
+type smethod_def = {
 	methodname: sexpr;
 	params: sexpr list;
 	guard_body: sexpr list;
 	storage_body: sexpr list;
 	effects_body: sexpr list;
 	returns: typ;
-} *)
+}
 
 type sinterface_def = {
 	ssignaturename: sexpr;
 	sinterfacebody: sexpr list;
 }
 
-(* type simplementation_def = {
+type simplementation_def = {
 	consturctor: sconsturctor_def;
 	methods: smethod_def list;
-} *)
+}
 
-type sprogram = sinterface_def  (* list * simplementation_def list*)
+type sprogram = sinterface_def list * simplementation_def list
 
 
 (* let string_of_op = function
@@ -80,7 +81,7 @@ let rec string_of_styp = function
   | SMapstruct(x, y) -> x ^ "I am mapping struct " ^ y ^ " "
    *)
 
-let rec string_of_sexpr = function
+(* let rec string_of_sexpr = function
 		SnumLit(x) -> string_of_int x ^ " "
 	| SbooLit(x) -> string_of_bool x ^ " "
 	| SId(x) -> "ID: " ^ x ^ " "
@@ -104,4 +105,4 @@ let string_of_sinterfacedef interfacedecl =
 
 let string_of_sprogram (interfacebody) =
   "\n\n Test for semantic analysis \n\n " ^
-  string_of_sinterfacedef interfacebody ^ "\n"
+  string_of_sinterfacedef interfacebody ^ "\n" *)

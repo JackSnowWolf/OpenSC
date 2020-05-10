@@ -7,15 +7,15 @@ signature TOKEN{
 
   storage supply : UInt;
 
-  map balances : Address => UInt;
+  map balances : (Address) => UInt;
   map allowances : (Address, Address) => UInt;
 
   event Transfer = Transfer of (Address, Address, UInt);
   event Approval = Approval of (Address, Address, UInt);
 
-  constructor c : UInt -> Unit;
-  method totalSupply : Unit -> UInt;
-  method balanceOf : Address -> UInt;
+  constructor c : UInt -> void;
+  method totalSupply : (void) -> UInt;
+  method balanceOf : (Address) -> UInt;
   method transfer : (Address, UInt) -> Bool;
   method transferFrom : (Address, Address, UInt) -> Bool;
   method approve : (Address, UInt) -> Bool;
@@ -29,7 +29,7 @@ constructor c (s : UInt){
   storage
     supply                |-> s;
     balances[Env.sender]  |-> s;
-  returns ();
+  returns void;
 }
 
 method totalSupply (){
@@ -39,8 +39,9 @@ method totalSupply (){
 }
 
 method balanceOf (a : Address){
-  guard
+  guard{
     Env.value == 0;
+  }
   returns balances[a];
   }
 

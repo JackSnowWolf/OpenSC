@@ -2,7 +2,7 @@
 -- https://solidity.readthedocs.io/en/v0.4.24/solidity-by-example.html#simple-open-auction
 
 
-signature AUCTION = sig{
+signature AUCTION{
   -- parameters
   storage beneficiary : Address;
   storage end : UInt;

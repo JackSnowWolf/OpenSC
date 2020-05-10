@@ -1,13 +1,20 @@
+-- A simple storage program
+
 signature SimpleStorage {
-    UInt storedData;
+    storage storedData : UInt;
 }
 
-method set(x: UInt) {
+constructor c (){
 	storage
-    	storedData = x;
-	returns ();
+	returns void;
 }
-
-method get(){
-    returns storedData;
+method set(x: UInt) {
+	guard{
+		x > 0;
+	}
+	storage{
+    	storedData |-> x;
+	}
+	effects{}
+	returns void;
 }
