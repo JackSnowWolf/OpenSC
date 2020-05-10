@@ -9,7 +9,7 @@ and sx =
 	| SBoolLit of bool
 	| SStrLit of string
 	| SId of string
-	| SVar of expr * typ
+	(* | SVar of expr * typ *)
 	| SEnvLit of string * string
 	| SLiteralexpr of expr
 	| SMapexpr of expr * expr list 
@@ -27,7 +27,7 @@ type sconsturctor_def ={
 
 type smethod_def = {
 	smethodname: sexpr;
-	sparams: literal list;
+	sparams: decls list;
 	sguard_body: sexpr list;
 	sstorage_body: sexpr list;
 	seffects_body: sexpr list;
