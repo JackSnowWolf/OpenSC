@@ -95,30 +95,30 @@ let string_of_op = function
 let unit_to_string () = "void"	
 
 let rec string_of_typ = function
-		Bool-> "bool" ^ " "
-	| Int -> "int" ^ " "
-	| Uint(x) ->  x ^ " "
-	| Address(x) ->  x ^ " "
-	| Void(x) ->  x ^ " "
-	| Mapstruct(x, y) ->  "I am mapping struct " ^ String.concat " " (List.map string_of_typ x) ^ String.concat " " (List.map string_of_typ y) ^ " "
+		Bool-> "bool"
+	| Int -> "int"
+	| Uint(x) ->  "uint(" ^ x ^ ")"
+	| Address(x) ->  "address(" ^ x ^ ")"
+	| Void(x) ->  "void(" ^ x ^ ")"
+	| Mapstruct(x, y) ->  "Mapstruct(" ^ String.concat " " (List.map string_of_typ x) ^ String.concat " " (List.map string_of_typ y) ^ ")"
 
 (* let string_of_param = function *)
 
 
 let rec string_of_expr = function
-		NumLit(x) -> string_of_int x ^ " "
-	| BooLit(x) -> string_of_bool x ^ " "
-	| Id(x) -> "ID: " ^ x ^ " "
-	| EnvLit(x) -> "Envrionment: " ^ x ^ " "
+		NumLit(x) -> string_of_int x
+	| BooLit(x) -> string_of_bool x
+	| Id(x) -> x
+	| EnvLit(x) -> "Envrionment(" ^ x ^ ")"
 	| StrLit(x) -> x
-	| Var(x, t) -> x ^ string_of_typ t
-	| TypeAssign(x, y)-> "Type Assign: " ^ string_of_expr x  ^ " " ^ string_of_typ y ^ "\n"
-	| MapAssign(x, t) -> "Map assign: " ^ string_of_expr x ^ " " ^ (string_of_typ t) ^ "\n"
-	| EnvironmentBinop (e1, e2, op, e3) -> "EnvironmentBinop " ^ string_of_expr e1 ^ string_of_expr e2 ^ string_of_op op ^ string_of_expr e3
-	| EnvironmentAssign (e1, e2, e3, e4) -> "Env assignement " ^ string_of_expr e1 ^string_of_expr e2 ^ string_of_expr e3 ^ string_of_expr e4 ^ "\n"
-	| PointAssign(x, e) -> "pointer assign: " ^string_of_expr x ^ " " ^ (string_of_expr e) ^ "\n"
+	| Var(x, t) -> x ^ ": " ^ string_of_typ t
+	| TypeAssign(x, y)-> "TypeAssign(" ^ string_of_expr x  ^ ", " ^ string_of_typ y ^ ")\n"
+	| MapAssign(x, t) -> "MapAssign(" ^ string_of_expr x ^ ", " ^ (string_of_typ t) ^ ")\n"
+	| EnvironmentBinop (e1, e2, op, e3) -> "EnvBinop " ^ string_of_expr e1 ^ string_of_expr e2 ^ string_of_op op ^ string_of_expr e3
+	| EnvironmentAssign (e1, e2, e3, e4) -> "EnvAssign " ^ string_of_expr e1 ^string_of_expr e2 ^ string_of_expr e3 ^ string_of_expr e4 ^ "\n"
+	| PointAssign(x, e) -> "PtrAssign(" ^ string_of_expr x ^ ", " ^ (string_of_expr e) ^ ")\n"
 	| Event(x, ty) -> x ^ "Event: " ^ String.concat " " (List.map string_of_typ ty) ^ "\n"
-	| Binop(e1, op, e2) ->  "binary operation: " ^ (string_of_expr e1) ^ " " ^ " "  ^ (string_of_op op) ^ " " ^ (string_of_expr e2) ^ "\n"
+	| Binop(e1, op, e2) ->  "Binop(" ^ (string_of_expr e1) ^ " "  ^ (string_of_op op) ^ " " ^ (string_of_expr e2) ^ ")\n"
 	| Constructorexpr(x, ty1, ty2) -> "constructor expr: " ^ " " ^ x ^ " " ^ string_of_typ ty1 ^ " " ^  string_of_typ ty2 ^ "\n"
 	| Methodexpr(x, ty1, ty2) -> "Method expr: " ^ string_of_expr x ^ " "  ^ String.concat " " (List.map string_of_typ ty1)  ^ (string_of_typ ty2) ^ " " ^ "\n"
 	| Logexpr(e, el) -> "Log for event: " ^ " " ^ string_of_expr e ^ " " ^ String.concat " " (List.map string_of_expr el) ^ "\n"
@@ -130,29 +130,37 @@ let rec string_of_expr = function
 	| Id(s) -> s *)
 
 let string_of_interfacedef interfacedecl =
-	string_of_expr interfacedecl.signaturename ^ " \n " ^
-  String.concat " \n " (List.map string_of_expr interfacedecl.interfacebody)
+	"--interface\n\n" ^
+	"signature " ^
+	string_of_expr interfacedecl.signaturename ^ "\n " ^
+  String.concat "\n " (List.map string_of_expr interfacedecl.interfacebody)
 
 let string_of_constructordef constructordecl = 
-	string_of_expr constructordecl.name ^ " \n " ^  
-	String.concat " \n " (List.map string_of_expr constructordecl.params) ^ 
-	String.concat " \n " (List.map string_of_expr constructordecl.consturctor_body) ^
-	" \n " ^ string_of_typ constructordecl.return_type
+	"constructor " ^
+	string_of_expr constructordecl.name ^ 
+	"(" ^ String.concat ", " (List.map string_of_expr constructordecl.params) ^ ")\n " ^
+	String.concat "\n " (List.map string_of_expr constructordecl.consturctor_body) ^
+	"\n returns " ^ string_of_typ constructordecl.return_type ^ "\n\n"
 
 let string_of_methoddef methoddecl = 
-	string_of_expr methoddecl.methodname ^ " \n " ^
-	String.concat " \n " (List.map string_of_expr methoddecl.params) ^
-	String.concat " \n " (List.map string_of_expr methoddecl.guard_body) ^
-	String.concat " \n " (List.map string_of_expr methoddecl.storage_body) ^
-	String.concat " \n " (List.map string_of_expr methoddecl.effects_body) ^
-	string_of_typ methoddecl.returns
+	"method " ^
+	string_of_expr methoddecl.methodname ^ 
+	"(" ^ String.concat ", " (List.map string_of_expr methoddecl.params) ^ ")\n" ^
+	" guard\n  " ^
+	String.concat "\n  " (List.map string_of_expr methoddecl.guard_body) ^ 
+	" storage\n  " ^
+	String.concat "\n  " (List.map string_of_expr methoddecl.storage_body) ^
+	" effects\n  " ^
+	String.concat "\n  " (List.map string_of_expr methoddecl.effects_body) ^
+	"\n returns " ^ string_of_typ methoddecl.returns ^ "\n\n"
 
 
 let string_of_implementation implementdecl =
-	string_of_constructordef implementdecl.consturctor ^ " " ^
+	"--implementation\n\n" ^
+	string_of_constructordef implementdecl.consturctor ^ 
 	String.concat "\n" (List.map string_of_methoddef implementdecl.methods)
 
 let string_of_program (interfaces, implementations) =
-	"\n\nParsed program: \n\n" ^
+	"\n\n-------------------\n  Parsed program \n-------------------\n\n" ^
 	String.concat "" (List.map string_of_interfacedef interfaces) ^ "\n"  ^
-  String.concat "\n" (List.map string_of_implementation implementations) ^ "Yeah"
+  String.concat "\n" (List.map string_of_implementation implementations) ^ "\n\n***Yeah!***"
