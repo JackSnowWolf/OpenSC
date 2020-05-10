@@ -11,7 +11,6 @@ and sx =
 	| SId of string
 	(* | SVar of expr * typ *)
 	| SEnvLit of string * string
-	| SLiteralexpr of expr
 	| SMapexpr of expr * expr list 
 	| SBinop of expr * op * expr
 	| SLogexpr of expr * expr list
@@ -19,7 +18,7 @@ and sx =
 
 type sconsturctor_def ={
 	sname: sexpr;
-	sparams: sexpr list;
+	sparams: decls list;
 	sconsturctor_body: sexpr list;
 	sreturn_type: typ;
 }
@@ -44,7 +43,7 @@ type simplementation_def = {
 	smethods: smethod_def list;
 }
 
-type sprogram = sinterface_def * simplementation_def 
+type sprogram = sinterface_def * simplementation_def
 
 
 let rec string_of_sexpr (t, e) = 
@@ -54,8 +53,8 @@ let rec string_of_sexpr (t, e) =
 	| SBoolLit(x) -> string_of_bool x ^ " "
 	| SStrLit(x) -> x
 	| SId(x) -> "ID: " ^ x ^ " "
-	| SBinop(e1, op, e2) ->  "binary operation: " ^ (string_of_sexpr e1) ^ " " ^ " "  ^ (string_of_op op) ^ " " ^ (string_of_sexpr e2) ^ "\n"
-	| SLogexpr(e, el) -> "Log for event: " ^ " " ^ string_of_sexpr e ^ " " ^ String.concat " " (List.map string_of_sexpr el) ^ "\n"
+	| SBinop(e1, op, e2) ->  "binary operation: " ^ (string_of_expr e1) ^ " " ^ " "  ^ (string_of_op op) ^ " " ^ (string_of_expr e2) ^ "\n"
+	| SLogexpr(e, el) -> "Log for event: " ^ " " ^ string_of_expr e ^ " " ^ String.concat " " (List.map string_of_expr el) ^ "\n"
 	(* | Svar(x, t) -> x ^ string_of_typ t *)
 	(* | StypeAssign(x, y)-> "Type Assign: " ^ string_of_sexpr x  ^ " " ^ string_of_typ y ^ "\n" *)
 	(* | SmapAssign(x, t1, t2) -> "Map assign: " ^ string_of_sexpr x ^ " " ^ (string_of_typ t1) ^ (string_of_typ t2) ^ "\n" *)
@@ -69,24 +68,24 @@ let rec string_of_sexpr (t, e) =
     "--interface\n\n" ^
     "signature " ^
     string_of_sexpr sinterfacedecl.ssignaturename ^ "\n " ^
-    String.concat "\n " (List.map string_of_decls sinterfacedecl.sinterfacebody)
+    String.concat "\n " (List.map string_of_decl sinterfacedecl.sinterfacebody)
   
 
 let string_of_sconstructordef constructordecl = 
   "constructor " ^
-	string_of_expr constructordecl.sname ^ 
-	"(" ^ String.concat " \n " (List.map string_of_expr constructordecl.sparams) ^ ")\n " ^
-	String.concat " \n " (List.map string_of_expr constructordecl.sconsturctor_body) ^
+	string_of_sexpr constructordecl.sname ^ 
+	"(" ^ String.concat " \n " (List.map string_of_decl constructordecl.sparams) ^ ")\n " ^
+	String.concat " \n " (List.map string_of_sexpr constructordecl.sconsturctor_body) ^
 	"\n returns " ^ string_of_typ constructordecl.sreturn_type ^ "\n\n"
 
 let string_of_smethoddef methoddecl = 
   "method " ^
 	string_of_sexpr methoddecl.smethodname ^ 
-	"(" ^  String.concat "\n  " (List.map string_of_sexpr methoddecl.sparams) ^ ")" ^
+	"(" ^  String.concat "\n  " (List.map string_of_decl methoddecl.sparams) ^ ")" ^
 	"\n guard\n  " ^ String.concat "\n  " (List.map string_of_sexpr methoddecl.sguard_body) ^
 	"\n storage\n  " ^ String.concat "\n  " (List.map string_of_sexpr methoddecl.sstorage_body) ^
 	"\n effects\n  " ^ String.concat "\n  " (List.map string_of_sexpr methoddecl.seffects_body) ^
-	"\n returns " ^ string_of_typ methoddecl.returns ^ "\n\n"
+	"\n returns " ^ string_of_typ methoddecl.sreturns ^ "\n\n"
 
 let string_of_simplementation implementdecl =
   "--implementation\n\n" ^
@@ -95,6 +94,5 @@ let string_of_simplementation implementdecl =
 
 let string_of_sprogram (interfaces, implementations) =
 	"\n\n-------------------\n  Semantically checked program \n-------------------\n\n" ^
-  string_of_sinterfacedef interfaces ^ "\n"  ^
-  string_of_simplementation implementations ^ "\n\n***Yeah!***"
-	
+	"" ^ ( string_of_sinterfacedef interfaces) ^ "\n"  ^
+	"\n" ^ (string_of_simplementation implementations) ^ "\n\n***Yeah!***"
