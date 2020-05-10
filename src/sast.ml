@@ -44,7 +44,7 @@ type simplementation_def = {
 	smethods: smethod_def list;
 }
 
-type sprogram = sinterface_def list * simplementation_def list
+type sprogram = sinterface_def * simplementation_def 
 
 
 let rec string_of_sexpr (t, e) = 
@@ -95,6 +95,6 @@ let string_of_simplementation implementdecl =
 
 let string_of_sprogram (interfaces, implementations) =
 	"\n\n-------------------\n  Semantically checked program \n-------------------\n\n" ^
-	String.concat "" (List.map string_of_sinterfacedef interfaces) ^ "\n"  ^
-	String.concat "\n" (List.map string_of_simplementation implementations) ^ "\n\n***Yeah!***"
+  string_of_sinterfacedef interfaces ^ "\n"  ^
+  string_of_simplementation implementations ^ "\n\n***Yeah!***"
 	
