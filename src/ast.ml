@@ -20,7 +20,6 @@ type expr =
 	| BoolLit of bool
 	| StrLit of string
 	| Id of string
-	| Var of expr * typ
 	| EnvLit of string * string
 	| Literalexpr of expr
 	| Mapexpr of expr * expr list 
@@ -28,6 +27,7 @@ type expr =
 	| Logexpr of expr * expr list
 
 type decls = 
+	| Var of expr * typ
 	| TypeAssigndecl of expr * typ
 	| MapAssigndecl of expr * typ
 	| Vardecl of expr * typ 
@@ -43,7 +43,7 @@ type decls =
 
 type consturctor_def ={
 	name: expr;
-	params: expr list;
+	params: decls list;
 	consturctor_body: expr list;
 	return_type: typ;
 }
@@ -51,7 +51,7 @@ type consturctor_def ={
 
 type method_def = {
 	methodname: expr;
-	params: expr list;
+	params: decls list;
 	guard_body: expr list;
 	storage_body: expr list;
 	effects_body: expr list;
@@ -109,7 +109,6 @@ let rec string_of_expr = function
 	| BoolLit(l) -> "Bool " ^ string_of_bool l ^ " "
 	| StrLit(l) -> "String literal " ^ l ^ " "
 	| Id(x) -> "ID: " ^ x ^ " "
-	| Var(x , t) -> "Var: " ^ string_of_expr x ^ string_of_typ t ^ " "
 	| EnvLit(l, l2) -> "Envrionment: " ^ l ^ (l2) ^ " "
 	| Literalexpr(l1) -> "Literal expr: " ^ string_of_expr l1 
 	| Mapexpr (l1, l2) -> "Map expr: " ^ string_of_expr l1 ^ String.concat " " (List.map string_of_expr l2)
@@ -118,6 +117,7 @@ let rec string_of_expr = function
 
 
 	let rec string_of_decl = function
+	| Var(x , t) -> "Var: " ^ string_of_expr x ^ string_of_typ t ^ " "
 	| TypeAssigndecl(l, t) -> "Type Assign: " ^ string_of_expr l  ^ " " ^ string_of_typ t ^ "\n"
 	| MapAssigndecl (l, t) -> "Map assign: " ^ string_of_expr l ^ " " ^ (string_of_typ t) ^ "\n"
 	| Vardecl(l, t) ->  "Var: " ^ string_of_expr l ^ string_of_typ t
@@ -137,13 +137,13 @@ let string_of_interfacedef interfacedecl =
 
 let string_of_constructordef constructordecl = 
 	string_of_expr constructordecl.name ^ " \n " ^  
-	String.concat " \n " (List.map string_of_expr constructordecl.params) ^ 
+	String.concat " \n " (List.map string_of_decl constructordecl.params) ^ 
 	String.concat " \n " (List.map string_of_expr constructordecl.consturctor_body) ^
 	" \n " ^ string_of_typ constructordecl.return_type
 
 let string_of_methoddef methoddecl = 
 	string_of_expr methoddecl.methodname ^ " \n " ^
-	String.concat " \n " (List.map string_of_expr methoddecl.params) ^
+	String.concat " \n " (List.map string_of_decl methoddecl.params) ^
 	String.concat " \n " (List.map string_of_expr methoddecl.guard_body) ^
 	String.concat " \n " (List.map string_of_expr methoddecl.storage_body) ^
 	String.concat " \n " (List.map string_of_expr methoddecl.effects_body) ^
@@ -157,4 +157,4 @@ let string_of_implementation implementdecl =
 let string_of_program (interfaces, implementations) =
 	"\n\nParsed program: \n\n" ^
 	String.concat "" (List.map string_of_interfacedef interfaces) ^ "\n"  ^
-  String.concat "\n" (List.map string_of_implementation implementations) ^ "Yeah"
+  String.concat "\n" (List.map string_of_implementation implementations) ^ "Yeah ! "
