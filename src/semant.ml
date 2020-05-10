@@ -13,23 +13,26 @@ let check_ids id = function
   
 
 (* need to implement *)
-let rec check_sexpr e = function
+let rec check_sexpr = function
   [] -> []
   | hd :: tl -> 
-          (match hd with 
-   | e.envLit l -> SenvLit l
-   | e.numLit l -> SnumLit l
-   | e.booLit l -> SbooLit l
-   | e.strLit l -> SstrLit l
-   | e.Id x -> SId x
-   | e.var (s, t) -> Svar (s, t)
-   | e.typeAssign (e, t) -> StypeAssign((check_sexpr e), t)
-   | e.mapAssign (e, t1, t2) -> SmapAssign ((check_sexpr e), t1, t2)
-   | e.pointAssign (e1, e2) -> SpointAssign((check_sexpr e1), (check_sexpr e2))
-   | e.event (s, t) -> Sevent(s, t)
-   | e.binop (e1, op, e2) -> Sbinop((check_sexpr e1), op, (check_sexpr e2))
-   | e.constructorexpr (s, t1, t2) -> Sconstructorexpr(s, t1, t2)
-   | e.methodexpr (s, t1, t2) -> Smethodexpr(s, t1, t2)
+    (match hd with 
+   | EnvLit l -> SenvLit l
+   | NumLit l -> SnumLit l
+   | BooLit l -> SbooLit l
+   | StrLit l -> SstrLit l
+   | Id x -> SId x
+   | Var (s, t) -> Svar (s, t)
+   | TypeAssign (e, t) -> StypeAssign((check_sexpr e), t)
+   | MapAssign (e, t1, t2) -> SmapAssign ((check_sexpr e), t1, t2)
+   | EnvironmentAssign (e1, e2, e3, e4) -> SenvironmentAssign(check_sexpr e1, check_sexpr e2, check_sexpr e3, check_sexpr e4)
+   | EnvironmentBinop (e1, e2, op, e4) -> SenvironmentBinop(check_sexpr e1, check_sexpr e2, op, check_sexpr e4)
+   | PointAssign(e1, e2) -> SpointAssign((check_sexpr e1), (check_sexpr e2))
+   | Event (s, t) -> Sevent(s, t)
+   | Binop (e1, op, e2) -> Sbinop((check_sexpr e1), op, (check_sexpr e2))
+   | Constructorexpr (s, t1, t2) -> Sconstructorexpr(s, t1, t2)
+   | Methodexpr (s, t1, t2) -> Smethodexpr(s, t1, t2)
+   | Logexpr (e, e2) -> Slogexpr(e, check_sexpr e2)
    ) :: check_sexpr tl 
   
 
