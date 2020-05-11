@@ -31,13 +31,6 @@ let check (signature, implementation) =
   (* Collect all variable names into one symbol table *)
   let var_decls = List.fold_left add_var StringMap.empty signature.interfacebody in
 
-  (* Return a variable from our symbol table *)
-  let find_var s =
-    try StringMap.find s var_decls
-    with Not_found -> raise (Failure ("unrecognized variable " ^ s))
-  in
-
-
   (* Add method name in interface to symbol table *)
   let add_func map func =
     let dup_err v = "duplicate method " ^ (string_of_expr v) ^ " in interface"
@@ -74,6 +67,7 @@ let check (signature, implementation) =
     | _ -> raise (Failure "Multiple constructors in interface")
   in
   
+
   let check_expr = function
     | NumLit l -> (Int, SNumLit l)
     | BoolLit l -> (Bool, SBoolLit l)
@@ -96,6 +90,38 @@ let check (signature, implementation) =
   in *)
 
   let check_func func = 
+
+    let _ = find_func (string_of_expr func.methodname) in
+
+    let add_var_args map var =
+      let dup_err v = "duplicate variable " ^ (string_of_expr v) ^ " in method arguments"
+      and make_err er = raise (Failure er)
+      in match var with (* No duplicate variables or redefinitions of built-ins *)
+        Var(x, t) when StringMap.mem (string_of_expr x) map -> make_err (dup_err x)
+      | Var(x, t) ->  StringMap.add (string_of_expr x) var map
+      | _ -> raise (Failure "Only variable allows in method arguments")
+    in
+
+    let var_sym = List.fold_left add_var_args var_decls func.params in
+
+    (* Return a variable from our symbol table *)
+    let find_var s =
+      try StringMap.find s var_sym
+      with Not_found -> raise (Failure ("unrecognized variable " ^ s))
+    in
+
+    let rec check_expr = function
+      | NumLit l -> (Int, SNumLit l)
+      | BoolLit l -> (Bool, SBoolLit l)
+      | StrLit l -> (Void("void"), SStrLit l)
+      (* check Id retrun with the correct type, keep Int for now *)
+      | Id x -> (Int, SId x)
+      | EnvLit(x, y) -> (Int, SEnvLit(x,y))
+      | Mapexpr(e1, e2) -> (Int, SMapexpr(e1, e2))
+      | Binop(e1, op, e2) -> (Int, SBinop(e1, op, e2))
+      | Logexpr(e1, e2) -> (Int, SLogexpr(e1, e2))
+    in
+    
     { 
       smethodname = check_expr func.methodname;
       sparams = func.params;
