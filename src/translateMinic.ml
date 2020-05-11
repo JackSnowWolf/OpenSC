@@ -68,26 +68,13 @@ let rec gen_ctype =
   function    
   | Uint x  -> Tint (I256, Unsigned)
   | Void x -> Tvoid
-  (*   | PointAssign ct -> coqgen_fatal_error __LOC__ "gen_ctype" "ACtpointer not supported"*)  
-  (*   | ACtarray (n, ct) -> Tarray (gen_ctype ct, coq_Z_of_int n)*)  
-(*   | MapAssign (e, t1, t2) -> Thashmap (gen_ctype t1, gen_ctype t2)
- *)  (* struct is not supported in current OpenSC *)
-  (*     and gen_ctype_fields sname  =
-  let open Backend.Ctypes in 
-  function
-  | [] -> Fnil
-  | (fld,ct)::flds -> Fcons (struct_field_name_to_ident2 sname fld,
-           gen_ctype ct,
-           gen_ctype_fields sname flds)
-      *)
-  let gen_unop = 
+  | Mapstruct (t1, t2) -> Thashmap(gen_ctype t1, gen_ctype t2)
+
+let gen_unop = 
   let open Cop in
   function
   | Neq -> Oneg
-(*   | OPnot -> Onotbool
-  | OPbitnot -> Onotint
-  | OPbitneg -> Onotint
-  | OPsha_1 -> Osha_1 *)
+
 
 let gen_binop =
   let open Cop in
@@ -99,114 +86,25 @@ let gen_binop =
   | Or -> Oor
   | Equal -> Oeq
   | Neq -> One
-(*   | OPlt -> Olt
-  | OPle -> Ole
-  | OPgt -> Ogt
-  | OPge -> Oge
-  | OPshl -> Oshl
-  | OPshr -> Oshr
-  | OPxor -> Oxor
-  | OPbitand -> Oand
-  | OPbitor -> Oor
-  | OPsha_2 -> Osha_2 *)
+  | And -> Oand 
+  | Or -> Oor 
 
-  let gen_expr  = 
-  let open Language in
-  let open Sast in
-  function
-  | StypeAssign (se, t) -> Etempvar (backend_ident_of_globvar (string_of_sexpr se), gen_ctype t)
-
-
-(* let rec gen_rexpr e =
-  let open Ctypes in
+(* type * sexpr *)
+let rec gen_rexpr e =
+  let open Ctypes in 
   let open Integers in
-  let open Language in
-  match e.aRexprDesc with      
-  | AEconst (CONint n) ->
-     Econst_int256 (Int256.repr (coq_Z_of_int n), gen_ctype e.aRexprType.aTypeCtype)
-  | AEconst (CONuint n) ->
-     Econst_int256 (Int256.repr (coq_Z_of_int n), gen_ctype e.aRexprType.aTypeCtype)
-  | AEconst (CONbool true) ->
-    Econst_int256 (Int256.one, Tint (I256, Unsigned))
-  | AEconst (CONbool false) ->
-    Econst_int256 (Int256.zero, Tint (I256, Unsigned))
-  | AEconst CONunit ->
-    Econst_int256 (Int256.zero, Tvoid)
-  | AEconst CONglobalpointer_undef ->
-     coqgen_fatal_error __LOC__ "output_rexpr" "Internal error."
-  | AEconstr_val (c, []) -> 
-    Econst_int256 (begin match c.aTypeConstrImpl with
-      | None | Some { aImplDesc = ACdefault } -> Int256.zero
-      | Some { aImplDesc = ACint n }          -> (Int256.repr (coq_Z_of_int n))
-      | _ -> coqgen_fatal_error __LOC__ "output_rexpr" "Internal error."
-        end,
-       gen_ctype e.aRexprType.aTypeCtype)
-  | AEconstr_val (c, _) -> coqgen_fatal_error __LOC__ "output_rexpr" "Internal error: Nonempty AEconstr is not supported."
-  | AEtemp (n, _i) ->
-    Etempvar (backend_ident_of_tempvar n, gen_ctype e.aRexprType.aTypeCtype)
-  | AEunop (op, e') ->
-     Eunop (gen_unop op,
-      gen_rexpr e',
-      gen_ctype e.aRexprType.aTypeCtype)
-  | AEbinop (op, e1, e2) ->
-     Ebinop (gen_binop op,
-       gen_rexpr e1,
-       gen_rexpr e2,
-       gen_ctype e.aRexprType.aTypeCtype)      
-  | AEbuiltin ("address",[]) ->
-     Ecall0 (Backend.MachineModel.Baddress,
-       gen_ctype e.aRexprType.aTypeCtype)
-  | AEbuiltin ("origin",[]) ->
-     Ecall0 (Backend.MachineModel.Borigin,
-       gen_ctype e.aRexprType.aTypeCtype)
-  | AEbuiltin ("caller",[]) ->
-     Ecall0 (Backend.MachineModel.Bcaller,
-       gen_ctype e.aRexprType.aTypeCtype)
-  | AEbuiltin ("callvalue",[]) ->
-     Ecall0 (Backend.MachineModel.Bcallvalue,
-       gen_ctype e.aRexprType.aTypeCtype)
-  | AEbuiltin ("coinbase",[]) ->
-     Ecall0 (Backend.MachineModel.Bcoinbase,
-       gen_ctype e.aRexprType.aTypeCtype)
-  | AEbuiltin ("timestamp",[]) ->
-     Ecall0 (Backend.MachineModel.Btimestamp,
-       gen_ctype e.aRexprType.aTypeCtype)
-  | AEbuiltin ("number",[]) ->
-     Ecall0 (Backend.MachineModel.Bnumber,
-       gen_ctype e.aRexprType.aTypeCtype)
-  | AEbuiltin ("balance",[e1]) ->
-     Ecall1 (Backend.MachineModel.Bbalance, (gen_rexpr e1),
-       gen_ctype e.aRexprType.aTypeCtype)
-  | AEbuiltin ("blockhash",[e1]) ->
-     Ecall1 (Backend.MachineModel.Bblockhash, (gen_rexpr e1),
-       gen_ctype e.aRexprType.aTypeCtype)
-      
-  | AEbuiltin (other,_) -> coqgen_fatal_error __LOC__ "output_rexpr"
-               ("Internal error, encountered unknown builtin \""^other^"\".")
-
+  let open Language in 
+  match e with
+  | SNumLit(x) -> Econst_int256 (Int256.repr (coq_Z_of_int x), gen_ctype e)
+  | SBoolLit(false) -> Econst_int256 (Int256.zero, Tint (I256, Unsigned))
+  | SBoolLit(true) -> Econst_int256 (Int256.one, Tint (I256, Unsigned))
+  | SBinop(e1, op, e2) -> Ebinop (gen_binop op, gen_rexpr e1, gen_rexpr e2, gen_ctype e)
+  | SEnvLit ("Env", "sender")-> Ecall0 (Backend.MachineModel.Baddress, gen_ctype e)
+(* 
 let rec gen_lexpr obj e =
   let open Backend.Integers in
   let open Backend.Language in
-  match e.aLexprDesc with
-  | AEvar i ->
-     Evar (backend_ident_of_globvar obj i,
-     gen_ctype e.aLexprType.aTypeCtype)
-  | AEfield (e', f) ->
-     Efield (gen_lexpr obj e',
-             begin match e'.aLexprType.aTypeDesc with
-       | ATdata (i, _) -> struct_field_name_to_ident2 i f
-       | ATprod _ as d -> struct_field_name_to_ident2 ("struct_" ^ a_type_desc_to_ident d) f
-       | _ -> coqgen_fatal_error __LOC__ "output_lexpr"
-               "Only ATdata and ATprod can be accessed through structure field selector"
-       end,
-       gen_ctype e.aLexprType.aTypeCtype)
-  | AEindex (e', idx) ->
-    Earrayderef (gen_lexpr obj e', gen_rexpr idx, gen_ctype e.aLexprType.aTypeCtype)
-  | AEhash (e', idx) ->
-    Ehashderef (gen_lexpr obj e',  gen_rexpr idx, gen_ctype e.aLexprType.aTypeCtype)
- *)
-
-(* END before gen_constr_assignments line 467 *)
+  | *)
 
 
 (* Print MiniC expressions/statements, for debugging purposes. *)
@@ -239,5 +137,8 @@ let rec string_of_expr = function
   | Ehashderef (e1,e2,t) -> ("Ehashderef("^string_of_expr e1 ^","^string_of_expr e2^","^string_of_ctype t^")")
   | Ecall0 (bt,t) -> "Ecall0(BUILTIN,TYPE)"
   | Ecall1 (bt,e,t) -> "Ecall0(BUILTIN,EXPR,TYPE)"
+
+
+
 
 
