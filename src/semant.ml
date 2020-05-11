@@ -29,27 +29,28 @@ let check (signature, implementation) =
     | Mapexpr(e1, e2) -> (Int, SMapexpr(e1, e2))
     | Binop(e1, op, e2) -> (Int, SBinop(e1, op, e2))
     | Logexpr(e1, e2) -> (Int, SLogexpr(e1, e2))
+  in
 
-    in
-
-    let sinterface_def =
-        {
-          ssignaturename = check_sexpr signature.signaturename;
-          sinterfacebody = signature.interfacebody;
-        }
-    in 
-    let simplementation_def = 
+  let sinterface_def =
       {
-        sconsturctor = {
-          sname = check_sexpr implementation.consturctor.name;
-          sparams = implementation.consturctor.params;
-          sconsturctor_body = check_sexpr_list implementation.consturctor.consturctor_body;
-          sreturn_type = implementation.consturctor.return_type;
-        };
-
-        smethods = [] (* check_funcs implementation.methods; *)
+        ssignaturename = check_sexpr signature.signaturename;
+        sinterfacebody = signature.interfacebody;
       }
-    in 
-    let sprogram = (sinterface_def, simplementation_def)
-    in 
-    sprogram
+  in 
+
+  let simplementation_def = 
+    {
+      sconsturctor = {
+        sname = check_sexpr implementation.consturctor.name;
+        sparams = implementation.consturctor.params;
+        sconsturctor_body = check_sexpr_list implementation.consturctor.consturctor_body;
+        sreturn_type = implementation.consturctor.return_type;
+      };
+
+      smethods = [] (* check_funcs implementation.methods; *)
+    }
+  in 
+
+  let sprogram = (sinterface_def, simplementation_def)
+  in
+  sprogram
