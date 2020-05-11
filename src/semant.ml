@@ -39,14 +39,14 @@ let check (signature, implementation) =
 
 
   (* Add method name in interface to symbol table *)
-  let add_func map var =
+  let add_func map func =
     let dup_err v = "duplicate method " ^ (string_of_expr v) ^ " in interface"
     and make_err er = raise (Failure er)
-    in match var with (* No duplicate variables or redefinitions of built-ins *)
+    in match func with (* No duplicate variables or redefinitions of built-ins *)
       Constructordecl(l, t1, t2) when StringMap.mem (string_of_expr l) map -> make_err (dup_err l)
-    | Constructordecl(l, t1, t2) ->  StringMap.add (string_of_expr l) var map
+    | Constructordecl(l, t1, t2) ->  StringMap.add (string_of_expr l) func map
     | Methodecls (l, t1, t2) when StringMap.mem (string_of_expr l) map -> make_err (dup_err l)
-    | Methodecls (l, t1, t2) ->  StringMap.add (string_of_expr l) var map
+    | Methodecls (l, t1, t2) ->  StringMap.add (string_of_expr l) func map
     | _ -> map
   in
 
@@ -59,7 +59,21 @@ let check (signature, implementation) =
     with Not_found -> raise (Failure ("unrecognized method " ^ s))
   in
 
+  let count_constructor num func =
+    match func with
+      Constructordecl(l, t1, t2) -> num +1
+      | _ -> num
+  in
 
+  (* check constructor only announce once in interface *)
+  let _  = 
+    let constructor_num = List.fold_left count_constructor 0 signature.interfacebody in
+    match constructor_num with
+    0 -> raise (Failure "No constructor in interface")
+    | 1 -> constructor_num
+    | _ -> raise (Failure "Multiple constructors in interface")
+  in
+  
   let check_expr = function
     | NumLit l -> (Int, SNumLit l)
     | BoolLit l -> (Bool, SBoolLit l)
