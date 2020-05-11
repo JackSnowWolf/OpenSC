@@ -49,12 +49,14 @@ type sprogram = sinterface_def * simplementation_def
 let rec string_of_sexpr (t, e) = 
   "(" ^ string_of_typ t ^ ": " ^ 
   (match e with 
-		SNumLit(x) -> string_of_int x ^ " "
-	| SBoolLit(x) -> string_of_bool x ^ " "
+		SNumLit(x) -> string_of_int x
+	| SBoolLit(x) -> string_of_bool x
 	| SStrLit(x) -> x
-	| SId(x) -> "ID: " ^ x ^ " "
-	| SBinop(e1, op, e2) ->  "binary operation: " ^ (string_of_expr e1) ^ " " ^ " "  ^ (string_of_op op) ^ " " ^ (string_of_expr e2) ^ "\n"
-	| SLogexpr(e, el) -> "Log for event: " ^ " " ^ string_of_expr e ^ " " ^ String.concat " " (List.map string_of_expr el) ^ "\n"
+  | SId(x) -> x
+  | SEnvLit(l, l2) -> "EnvLit(" ^ l ^ (l2) ^ ")"
+	| SMapexpr (l1, l2) -> "Mapexpr(" ^ string_of_expr l1 ^ String.concat " " (List.map string_of_expr l2) ^ ")"
+	| SBinop(e1, op, e2) ->  "Binop(" ^ (string_of_expr e1) ^ " " ^ (string_of_op op) ^ " " ^ (string_of_expr e2) ^ ")"
+	| SLogexpr(e, el) -> "Log(" ^ string_of_expr e ^ " " ^ String.concat " " (List.map string_of_expr el) ^ ")"
 	(* | Svar(x, t) -> x ^ string_of_typ t *)
 	(* | StypeAssign(x, y)-> "Type Assign: " ^ string_of_sexpr x  ^ " " ^ string_of_typ y ^ "\n" *)
 	(* | SmapAssign(x, t1, t2) -> "Map assign: " ^ string_of_sexpr x ^ " " ^ (string_of_typ t1) ^ (string_of_typ t2) ^ "\n" *)
@@ -64,11 +66,11 @@ let rec string_of_sexpr (t, e) =
 	(* | Smethodexpr(x, ty1, ty2) -> "Method expr: " ^ x ^ " "  ^ string_of_typ ty1 ^ " " ^ string_of_typ ty2 ^ " " ^ "\n" *)
   ) ^ ")"
 
-  let string_of_sinterfacedef sinterfacedecl =
-    "--interface\n\n" ^
-    "signature " ^
-    string_of_sexpr sinterfacedecl.ssignaturename ^ "\n " ^
-    String.concat "\n " (List.map string_of_decl sinterfacedecl.sinterfacebody)
+let string_of_sinterfacedef sinterfacedecl =
+  "--interface\n\n" ^
+  "signature " ^
+  string_of_sexpr sinterfacedecl.ssignaturename ^ "\n " ^
+  String.concat "\n " (List.map string_of_decl sinterfacedecl.sinterfacebody)
   
 
 let string_of_sconstructordef constructordecl = 
@@ -93,6 +95,6 @@ let string_of_simplementation implementdecl =
 	String.concat "\n" (List.map string_of_smethoddef implementdecl.smethods)
 
 let string_of_sprogram (interfaces, implementations) =
-	"\n\n-------------------\n  Semantically checked program \n-------------------\n\n" ^
+	"\n\n--------------------------------\n  Semantically checked program \n--------------------------------\n\n" ^
 	"" ^ ( string_of_sinterfacedef interfaces) ^ "\n"  ^
 	"\n" ^ (string_of_simplementation implementations) ^ "\n\n***Yeah!***"

@@ -11,15 +11,7 @@ let strore_ids ta = function *)
 
 (* need to implement *)
 let check (signature, implementation) =
-  let rec check_funcs = function
-    [] -> []
-  | hd :: tl -> hd :: tl
-  in
-
-  let rec check_sexpr_list = function
-  [] -> []
-  | hd :: tl -> (check_sexpr hd) :: check_sexpr_list tl
-  and check_sexpr = function
+  let check_expr = function
     | NumLit l -> (Int, SNumLit l)
     | BoolLit l -> (Bool, SBoolLit l)
     | StrLit l -> (Void("void"), SStrLit l)
@@ -31,9 +23,29 @@ let check (signature, implementation) =
     | Logexpr(e1, e2) -> (Int, SLogexpr(e1, e2))
   in
 
+  (* let check_decl = function
+    | Var(expr,typ) -> 
+    | TypeAssigndecl(expr,typ) ->
+    | MapAssigndecl(expr,typ) -> 
+    | Eventdecl(expr,typli) -> 
+    | Constructordecl(expr,typ,typ) -> 
+    | Methodecls(expr,typli,typ) -> 
+  in *)
+
+  let check_func func = 
+    { 
+      smethodname = check_expr func.methodname;
+      sparams = func.params;
+      sguard_body = List.map check_expr func.guard_body;
+      sstorage_body = List.map check_expr func.storage_body;
+      seffects_body = List.map check_expr func.effects_body;
+      sreturns = func.returns;
+    }
+  in
+
   let sinterface_def =
       {
-        ssignaturename = check_sexpr signature.signaturename;
+        ssignaturename = check_expr signature.signaturename;
         sinterfacebody = signature.interfacebody;
       }
   in 
@@ -41,13 +53,13 @@ let check (signature, implementation) =
   let simplementation_def = 
     {
       sconsturctor = {
-        sname = check_sexpr implementation.consturctor.name;
+        sname = check_expr implementation.consturctor.name;
         sparams = implementation.consturctor.params;
-        sconsturctor_body = check_sexpr_list implementation.consturctor.consturctor_body;
+        sconsturctor_body = List.map check_expr implementation.consturctor.consturctor_body;
         sreturn_type = implementation.consturctor.return_type;
       };
 
-      smethods = [] (* check_funcs implementation.methods; *)
+      smethods = List.map check_func implementation.methods;
     }
   in 
 
