@@ -11,6 +11,33 @@ let strore_ids ta = function *)
 
 (* need to implement *)
 let check (signature, implementation) =
+
+  (* Add variable id in interface to symbol table *)
+  (* Add variable id in interface to symbol table *)
+  let add_var map var =
+    let dup_err v = "duplicate variable " ^ (string_of_expr v)
+    and make_err er = raise (Failure er)
+    in match var with (* No duplicate variables or redefinitions of built-ins *)
+      Var(x, t) when StringMap.mem (string_of_expr x) map -> make_err (dup_err x)
+    | Var(x, t) ->  StringMap.add (string_of_expr x) var map
+    | TypeAssigndecl(x, t) when StringMap.mem (string_of_expr x) map -> make_err (dup_err x)
+    | TypeAssigndecl(x, t) ->  StringMap.add (string_of_expr x) var map
+    | MapAssigndecl(x, t) when StringMap.mem (string_of_expr x) map -> make_err (dup_err x)
+    | MapAssigndecl(x, t) ->  StringMap.add (string_of_expr x) var map
+    | Eventdecl(x, t) when StringMap.mem (string_of_expr x) map -> make_err (dup_err x)
+    | Eventdecl(x, t) ->  StringMap.add (string_of_expr x) var map
+    | _ -> map
+  in
+
+  (* Collect all function names into one symbol table *)
+  let var_decls = List.fold_left add_var StringMap.empty signature.interfacebody in
+
+  (* Return a variable from our symbol table *)
+  let var_func s =
+    try StringMap.find s var_decls
+    with Not_found -> raise (Failure ("unrecognized variable " ^ s))
+  in
+
   let check_expr = function
     | NumLit l -> (Int, SNumLit l)
     | BoolLit l -> (Bool, SBoolLit l)
