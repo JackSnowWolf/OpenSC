@@ -13,9 +13,8 @@ let strore_ids ta = function *)
 let check (signature, implementation) =
 
   (* Add variable id in interface to symbol table *)
-  (* Add variable id in interface to symbol table *)
   let add_var map var =
-    let dup_err v = "duplicate variable " ^ (string_of_expr v)
+    let dup_err v = "duplicate variable " ^ (string_of_expr v) ^ " in interface"
     and make_err er = raise (Failure er)
     in match var with (* No duplicate variables or redefinitions of built-ins *)
       Var(x, t) when StringMap.mem (string_of_expr x) map -> make_err (dup_err x)
@@ -29,14 +28,37 @@ let check (signature, implementation) =
     | _ -> map
   in
 
-  (* Collect all function names into one symbol table *)
+  (* Collect all variable names into one symbol table *)
   let var_decls = List.fold_left add_var StringMap.empty signature.interfacebody in
 
   (* Return a variable from our symbol table *)
-  let var_func s =
+  let find_var s =
     try StringMap.find s var_decls
     with Not_found -> raise (Failure ("unrecognized variable " ^ s))
   in
+
+
+  (* Add method name in interface to symbol table *)
+  let add_func map var =
+    let dup_err v = "duplicate method " ^ (string_of_expr v) ^ " in interface"
+    and make_err er = raise (Failure er)
+    in match var with (* No duplicate variables or redefinitions of built-ins *)
+      Constructordecl(l, t1, t2) when StringMap.mem (string_of_expr l) map -> make_err (dup_err l)
+    | Constructordecl(l, t1, t2) ->  StringMap.add (string_of_expr l) var map
+    | Methodecls (l, t1, t2) when StringMap.mem (string_of_expr l) map -> make_err (dup_err l)
+    | Methodecls (l, t1, t2) ->  StringMap.add (string_of_expr l) var map
+    | _ -> map
+  in
+
+  (* Collect all function names into one symbol table *)
+  let func_decls = List.fold_left add_func StringMap.empty signature.interfacebody in
+
+  (* Return a function from our symbol table *)
+  let find_func s =
+    try StringMap.find s func_decls
+    with Not_found -> raise (Failure ("unrecognized method " ^ s))
+  in
+
 
   let check_expr = function
     | NumLit l -> (Int, SNumLit l)
