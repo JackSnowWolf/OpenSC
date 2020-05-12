@@ -2,6 +2,9 @@
 
 signature SimpleStorage {
     storage storedData : UInt;
+
+	constructor c : void -> void;
+	method set : (UInt) -> void;
 }
 
 constructor c (){
@@ -18,3 +21,4 @@ method set(x: UInt) {
 	effects{}
 	returns void;
 }
+
