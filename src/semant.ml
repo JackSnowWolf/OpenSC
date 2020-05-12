@@ -68,16 +68,16 @@ let check (signature, implementation) =
   in
   
 
-  let check_expr = function
+  let rec check_expr = function
     | NumLit l -> (Int, SNumLit l)
     | BoolLit l -> (Bool, SBoolLit l)
     | StrLit l -> (Void("void"), SStrLit l)
     (* check Id retrun with the correct type, keep Int for now *)
     | Id x -> (Int, SId x)
     | EnvLit(x, y) -> (Int, SEnvLit(x,y))
-    | Mapexpr(e1, e2) -> (Int, SMapexpr(e1, e2))
-    | Binop(e1, op, e2) -> (Int, SBinop(e1, op, e2))
-    | Logexpr(e1, e2) -> (Int, SLogexpr(e1, e2))
+    | Mapexpr(e1, e2) -> (Int, SMapexpr(check_expr e1, List.map check_expr e2))
+    | Binop(e1, op, e2) -> (Int, SBinop(check_expr e1, op, check_expr e2))
+    | Logexpr(e1, e2) -> (Int, SLogexpr(check_expr e1, List.map check_expr e2))
   in
 
   (* let check_decl = function
@@ -138,9 +138,16 @@ let check (signature, implementation) =
     let var_sym = List.fold_left add_var_args var_decls func.params in
 
     (* Return a variable from our symbol table *)
-    let find_var s =
+    let find_var s = let s_type = 
       try StringMap.find s var_sym
       with Not_found -> raise (Failure ("unrecognized variable " ^ s))
+      in
+      match s_type with
+      Var(x, t) -> t
+      | TypeAssigndecl(x, t) -> t
+      | MapAssigndecl(x, t) -> t
+      | Eventdecl(x, t) -> Void("void")
+      | _ -> raise (Failure ("unrecognized variable " ^ string_of_decl s_type ))
     in
 
     let rec check_expr = function
@@ -148,11 +155,11 @@ let check (signature, implementation) =
       | BoolLit l -> (Bool, SBoolLit l)
       | StrLit l -> (Void("void"), SStrLit l)
       (* check Id retrun with the correct type, keep Int for now *)
-      | Id x -> (Int, SId x)
+      | Id x -> (find_var x, SId x)
       | EnvLit(x, y) -> (Int, SEnvLit(x,y))
-      | Mapexpr(e1, e2) -> (Int, SMapexpr(e1, e2))
-      | Binop(e1, op, e2) -> (Int, SBinop(e1, op, e2))
-      | Logexpr(e1, e2) -> (Int, SLogexpr(e1, e2))
+      | Mapexpr(e1, e2) -> (Int, SMapexpr(check_expr e1, List.map check_expr e2))
+      | Binop(e1, op, e2) -> (Int, SBinop(check_expr e1, op, check_expr e2))
+      | Logexpr(e1, e2) -> (Int, SLogexpr(check_expr e1, List.map check_expr e2))
     in
     
     { 

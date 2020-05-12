@@ -9,11 +9,11 @@ and sx =
 	| SBoolLit of bool
 	| SStrLit of string
 	| SId of string
-	(* | SVar of expr * typ *)
+	(* | SVar of sexpr * typ *)
 	| SEnvLit of string * string
-	| SMapexpr of expr * expr list 
-	| SBinop of expr * op * expr
-	| SLogexpr of expr * expr list
+	| SMapexpr of sexpr * sexpr list 
+	| SBinop of sexpr * op * sexpr
+	| SLogexpr of sexpr * sexpr list
 
 
 type sconsturctor_def ={
@@ -54,9 +54,9 @@ let rec string_of_sexpr (t, e) =
 	| SStrLit(x) -> x
   | SId(x) -> x
   | SEnvLit(l, l2) -> "EnvLit(" ^ l ^ (l2) ^ ")"
-	| SMapexpr (l1, l2) -> "Mapexpr(" ^ string_of_expr l1 ^ String.concat " " (List.map string_of_expr l2) ^ ")"
-	| SBinop(e1, op, e2) ->  "Binop(" ^ (string_of_expr e1) ^ " " ^ (string_of_op op) ^ " " ^ (string_of_expr e2) ^ ")"
-	| SLogexpr(e, el) -> "Log(" ^ string_of_expr e ^ " " ^ String.concat " " (List.map string_of_expr el) ^ ")"
+	| SMapexpr (l1, l2) -> "Mapexpr(" ^ string_of_sexpr l1 ^ String.concat " " (List.map string_of_sexpr l2) ^ ")"
+	| SBinop(e1, op, e2) ->  "Binop(" ^ (string_of_sexpr e1) ^ " " ^ (string_of_op op) ^ " " ^ (string_of_sexpr e2) ^ ")"
+	| SLogexpr(e, el) -> "Log(" ^ string_of_sexpr e ^ " " ^ String.concat " " (List.map string_of_sexpr el) ^ ")"
 	(* | Svar(x, t) -> x ^ string_of_typ t *)
 	(* | StypeAssign(x, y)-> "Type Assign: " ^ string_of_sexpr x  ^ " " ^ string_of_typ y ^ "\n" *)
 	(* | SmapAssign(x, t1, t2) -> "Map assign: " ^ string_of_sexpr x ^ " " ^ (string_of_typ t1) ^ (string_of_typ t2) ^ "\n" *)
