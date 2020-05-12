@@ -105,6 +105,11 @@ let check (signature, implementation) =
 
     in
 
+    let sfunc = function
+       | Id l -> (Void("void"), SStrLit l)
+       | e -> raise (Failure ("Not a function name " ^ string_of_expr e))
+    in
+
     let func_decl = find_func (string_of_expr func.methodname) in
 
     let params_types = match func_decl with 
@@ -163,7 +168,7 @@ let check (signature, implementation) =
     in
     
     { 
-      smethodname = check_expr func.methodname;
+      smethodname = sfunc func.methodname;
       sparams = func.params;
       sguard_body = List.map check_expr func.guard_body;
       sstorage_body = List.map check_expr func.storage_body;
