@@ -82,10 +82,10 @@ let gen_binop =
   | Add -> Oadd
   | Sub -> Osub
   | Times -> Omul
-  | Divide -> Oand
+  | Divide -> Odiv
   | Or -> Oor
   | Equal -> Oeq
-  | Neq -> One
+  (*| Neq -> One*)
   | And -> Oand 
   | Or -> Oor 
 
