@@ -194,6 +194,14 @@ let check (signature, implementation) =
             | _ -> raise (Failure err)
           in
           (t, SBinop((t1, e1'), op, (t2, e2')))
+        else if (t1 = Uint("uint") && t2 = Int) || (t1 = Int && t2 = Uint("uint")) then
+          let t = match op with
+          Add | Sub | Times | Divide -> Int
+          | Equal | Neq | LGT | RGT | LGTEQ | RGTEQ -> Bool
+          | PASSIGN -> Void("void")
+          | _ -> raise (Failure err)
+          in
+          (t, SBinop((t1, e1'), op, (t2, e2')))
         else raise (Failure err)
 
       | Logexpr(e1, e2) -> (Int, SLogexpr(check_expr e1, List.map check_expr e2))
