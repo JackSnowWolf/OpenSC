@@ -112,8 +112,18 @@ let check (signature, implementation) =
       | _ -> raise (Failure "Not legal method")
     in
     
-    (* Check wether variable argument type matches with declaration *)
+    (* Check argument types length matches with declaration  *)
+    let _ = let typ_len_func = List.length func.params
+      in let typ_len_decl = List.length params_types in
+      match typ_len_func, typ_len_decl with
+      typ_len_func, typ_len_decl when (typ_len_func > typ_len_decl)
+      -> raise (Failure ("Redundant arguments in method " ^ string_of_expr func.methodname))
+      | typ_len_func, typ_len_decl when (typ_len_func < typ_len_decl)
+      -> raise (Failure ("Missing arguments in method " ^ string_of_expr func.methodname))
+      | _, _ -> typ_len_func
+    in
 
+    (* Check whether variable argument type matches with declaration *)
     let _ = (List.map2 check_args_type func.params params_types) in
 
     let add_var_args map var =
