@@ -163,7 +163,28 @@ let check (signature, implementation) =
       | Id x -> (find_var x, SId x)
       | EnvLit(x, y) -> (Int, SEnvLit(x,y))
       | Mapexpr(e1, e2) -> (Int, SMapexpr(check_expr e1, List.map check_expr e2))
-      | Binop(e1, op, e2) -> (Int, SBinop(check_expr e1, op, check_expr e2))
+      | Binop(e1, op, e2) as e -> 
+        let (t1, e1') = check_expr e1
+        and (t2, e2') = check_expr e2 in
+        let err = "illegal binary operator " ^
+                  string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
+                  string_of_typ t2 ^ " in " ^ string_of_expr e
+        in
+        (* All binary operators require operands of the same type*)
+        if t1 = t2 then
+          (* Determine expression type based on operator and operand types *)
+          let t = match op with
+            Add | Sub | Times | Divide when t1 = Uint("uint") -> Uint("uint")
+            | Add | Sub | Times | Divide when t1 = Int -> Int
+            | Equal | Neq  -> Bool
+            | LGT | RGT | LGTEQ | RGTEQ when t1 = Uint("uint") || t1 = Int -> Bool
+            | And | Or when t1 = Bool -> Bool
+            | PASSIGN -> Void("void")
+            | _ -> raise (Failure err)
+          in
+          (t, SBinop((t1, e1'), op, (t2, e2')))
+        else raise (Failure err)
+
       | Logexpr(e1, e2) -> (Int, SLogexpr(check_expr e1, List.map check_expr e2))
     in
     

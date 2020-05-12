@@ -3,7 +3,7 @@
 signature SimpleStorage {
     storage tag : Bool;
     constructor c : void -> void;
-    method set : (int, Bool) -> void;
+    method set : (UInt, Bool) -> void;
 }
 
 -- implementation
@@ -13,7 +13,7 @@ constructor c (){
   returns void;
 }
 
-method set(x: int, y: Bool) {
+method set(x: UInt, y: Bool) {
 	guard{
         x > 0;
     }
