@@ -67,6 +67,17 @@ let check (signature, implementation) =
     | _ -> raise (Failure "Multiple constructors in interface")
   in
   
+  (* Check all methods are implemented only once *)
+
+  let add_implement map impl = 
+    let dup_err v = "duplicate method " ^ (string_of_expr v) ^ " in implementation"
+    and make_err er = raise (Failure er)
+    in match impl with
+      impl when StringMap.mem (string_of_expr impl.methodname) map -> make_err (dup_err impl.methodname)
+      | impl ->  StringMap.add (string_of_expr impl.methodname) impl map
+  in
+
+  let _ = List.fold_left add_implement StringMap.empty  implementation.methods in
 
   let rec check_expr = function
     | NumLit l -> (Int, SNumLit l)
