@@ -173,7 +173,50 @@ let check (signature, implementation) =
       (* check Id retrun with the correct type, keep Int for now *)
       | Id x -> (find_var x, SId x)
       | EnvLit(x, y) -> (Int, SEnvLit(x,y))
-      | Mapexpr(e1, e2) -> (Int, SMapexpr(check_expr e1, List.map check_expr e2))
+      | Mapexpr(e1, e2) as e -> 
+        let id_err = string_of_expr e1 ^ " is not a id in " ^ string_of_expr e in
+        let (t1, e1') = match e1 with 
+          Id(id) -> check_expr e1
+          | _ -> raise (Failure id_err)
+        in
+        let type_err = "Id " ^ string_of_expr e1 ^ " " ^
+                      " is " ^ string_of_typ t1 ^ 
+                      " type, not a map struct in " ^ string_of_expr e in
+        let e2' = List.map check_expr e2 in
+        let check_map_key_type key_type sexpr2 = 
+          match sexpr2 with
+            (type2, sx2) -> 
+            let key_err = "Expresion "  ^ (string_of_sexpr sexpr2) 
+                      ^ " has type " ^ (string_of_typ type2) ^ ", but type "
+                      ^ (string_of_typ key_type) ^ " is required in "
+                      ^ string_of_expr e
+            in
+            if key_type = type2 then
+            sexpr2
+            else 
+            raise (Failure key_err)
+        in
+        let value_type = match t1 with
+          Mapstruct(key_typli, value_type) -> 
+          (* Check map query types length matches with map declaration  *)
+          let key_type_ls_len = List.length key_typli
+          and query_type_ls_len = List.length e2' in
+          let _ =
+          match key_type_ls_len, query_type_ls_len with
+          key_type_ls_len, query_type_ls_len when 
+          (key_type_ls_len > query_type_ls_len) ->
+          raise (Failure ("Missing query value in map " ^ string_of_expr e))
+          | key_type_ls_len, query_type_ls_len when 
+          (key_type_ls_len < query_type_ls_len) ->
+          raise (Failure ("Redundant query value in map " ^ string_of_expr e))
+          | _ -> key_type_ls_len
+          in
+          let _ = List.map2 check_map_key_type key_typli e2' in
+          value_type
+          | _ -> raise (Failure type_err)
+        in 
+        (value_type, SMapexpr((t1, e1'), e2'))
+      
       | Binop(e1, op, e2) as e -> 
         let (t1, e1') = check_expr e1
         and (t2, e2') = check_expr e2 in

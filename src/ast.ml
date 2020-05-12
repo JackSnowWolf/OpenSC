@@ -6,7 +6,7 @@ type typ =
 	| Uint of string 
 	| Address of string
 	| Void of string
-	| Mapstruct of typ list * typ list
+	| Mapstruct of typ list * typ
 
 
 (* Need change *)
@@ -100,7 +100,7 @@ let rec string_of_typ = function
 	| Uint(x) ->  "uint(" ^ x ^ ")"
 	| Address(x) ->  "address(" ^ x ^ ")"
 	| Void(x) ->  "void(" ^ x ^ ")"
-	| Mapstruct(x, y) ->  "Mapstruct(" ^ String.concat " " (List.map string_of_typ x) ^ String.concat " " (List.map string_of_typ y) ^ ")"
+	| Mapstruct(x, y) ->  "Mapstruct(" ^ String.concat " " (List.map string_of_typ x) ^ ") => " ^ (string_of_typ y) 
 
 let rec string_of_expr = function
 	| NumLit(l) -> "NumLit(" ^ string_of_int l ^ ")"
