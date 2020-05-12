@@ -4,7 +4,7 @@ let sprintf = Printf.sprintf
 
 open Language   
 
-(* TODO: Need to revised *)
+
 
 let rec positive_of_int n =
   let open BinNums in
@@ -65,16 +65,24 @@ let backend_ident_of_tempvar i = positive_of_int i
 
 let rec gen_ctype =
   let open Ctypes in 
-  function    
+  function 
+  | Int -> Tint (I256, Unsigned)
   | Uint x  -> Tint (I256, Unsigned)
   | Void x -> Tvoid
-  | Mapstruct (t1, t2) -> Thashmap(gen_ctype t1, gen_ctype t2)
+  (* | Mapstruct (t1, t2) -> Thashmap (gen_ctype t1, gen_ctype t2) *)
+  (* and gen_ctype_fields
+  do we need ctype fields??
+  leave for now
+  *)
 
-let gen_unop = 
+  let gen_unop = 
   let open Cop in
   function
   | Neq -> Oneg
-
+  (* | OPnot -> Onotbool
+  | OPbitnot -> Onotint
+  | OPbitneg -> Onotint
+  | OPsha_1 -> Osha_1  may need to suppport more unary op *)
 
 let gen_binop =
   let open Cop in
@@ -83,33 +91,189 @@ let gen_binop =
   | Sub -> Osub
   | Times -> Omul
   | Divide -> Odiv
+  | And -> Oand
   | Or -> Oor
   | Equal -> Oeq
-  (*| Neq -> One*)
-  | And -> Oand 
-  | Or -> Oor 
+  | Neq -> One
+  | RGT -> Olt
+  | RGTEQ -> Ole
+  | LGT -> Ogt
+  | LGTEQ -> Oge
+(*   | OPlt -> Olt
+  | OPle -> Ole
+  | OPgt -> Ogt
+  | OPge -> Oge
+  | OPshl -> Oshl
+  | OPshr -> Oshr
+  | OPxor -> Oxor
+  | OPbitand -> Oand
+  | OPbitor -> Oor
+  | OPsha_2 -> Osha_2 *)
 
-(* type * sexpr *)
 let rec gen_rexpr e =
-  let open Ctypes in 
+  let open Ctypes in
   let open Integers in
-  let open Language in 
+  let open Language in
+  let open MachineModel in
   match e with
-  | SNumLit(x) -> Econst_int256 (Int256.repr (coq_Z_of_int x), gen_ctype e)
-  | SBoolLit(false) -> Econst_int256 (Int256.zero, Tint (I256, Unsigned))
-  | SBoolLit(true) -> Econst_int256 (Int256.one, Tint (I256, Unsigned))
-  | SBinop(e1, op, e2) -> Ebinop (gen_binop op, gen_rexpr e1, gen_rexpr e2, gen_ctype e)
-  | SEnvLit ("Env", "sender")-> Ecall0 (Backend.MachineModel.Baddress, gen_ctype e)
+  | (t, SNumLit l) -> Econst_int256 (Int256.repr (coq_Z_of_int l), gen_ctype Int)
+  | (t, SBoolLit l) -> (match l with 
+                        |true -> Econst_int256 (Int256.one, Tint (I256, Unsigned))
+                        |false -> Econst_int256 (Int256.zero, Tint (I256, Unsigned)) )
+  (* SStrLit *)
+  | (t, SId l) -> Evar (backend_ident_of_globvar l, gen_ctype t)
+  | (t1, SBinop ((t2, se1), op, (t3, se2))) -> Ebinop (gen_binop op, gen_rexpr (t2, se1), gen_rexpr (t3, se2), gen_ctype t1)	
+  | (t, SId l)-> Etempvar (backend_ident_of_tempvar 1, gen_ctype t) (* this is wrong leave for now *)
+  | (t, SEnvLit(s1, s2)) -> (match s2 with |"sender" -> Ecall0 (Baddress, Tvoid))
+
+(* need to revised! *)
+let rec gen_lexpr e =
+  let open Integers in
+  let open Language in
+  match e with
+  |(t, SId l) -> Evar (backend_ident_of_globvar l, gen_ctype t)
+
+
+(* generate specifc statement *)
+let gen_assign_stmt e1 e2 = 
+  let open Language in
+  Sassign(gen_rexpr e1, gen_rexpr e2)
+
+let gen_set_stmt id e1 =
+  let open Language in
+  Sset (positive_of_int id, gen_rexpr e1)
+
+(* let rec gen_nonempty_params (e, t) =
+  let open Datatypes in
+  match ts with
+  | t :: ts -> Coq_pair (positive_of_int (1), gen_ctype t) :: gen_nonempty_params (base+1) ts
+  |  _ -> [] *)
+
+(* let gen_params (e, t) =
+  match e with
+  | [] -> []
+  | params -> gen_nonempty_params 1 e *)
+
+let rec gen_tempenv = function
+  | [] -> []
+  | (id, typ) :: ts -> Datatypes.Coq_pair (backend_ident_of_tempvar id, gen_ctype typ) :: gen_tempenv ts
+
+       
+let builtinBase_local_ident_start = 10
+
+(* need a big change..... need obj name*)
+let gen_methoddef m =
+  let open Datatypes in
+  let dest = builtinBase_local_ident_start in  
+  (* let is_pure, has_return = method_classify mt in *)
+  let body = gen_set_stmt  builtinBase_local_ident_start (List.hd m.sstorage_body) in
+  let ret_type = (gen_ctype m.sreturns)in
+  { fn_return = ret_type ;
+    fn_params = Coq_nil;
+    fn_temps  = Coq_nil; (* coqlist_of_list (gen_tempenv ((dest,mt.aMethodReturnType.aTypeCtype) :: gen_cmd_locals m.aMethodBody dest))*)
+    fn_body =  (* (if has_return then
+                  Ssequence (body,
+			     (Sreturn Tvoid))
+		else *)
+		  body (* ) *)
+  }
+
+(* leave for now
+let method_classify mt =
+  (* is pure *) mt.sreturns = True,
+  (* has return *) mt.aMethodReturnType.aTypeDesc <> ATbuiltin Tunit	
+*)
+
+
+
+
 (* 
-let rec gen_lexpr obj e =
-  let open Backend.Integers in
-  let open Backend.Language in
-  | *)
+open AST (* type ident = positive -> BinNums: type positive = | Coq_xI of positive | Coq_xO of positive | Coq_xH *)
+open Cop (* unary_operation, binary_operation *)
+open Ctypes (* type coq_type = Tvoid | ... | ... *)
+open Datatypes (* type ('a, 'b) prod = Coq_pair of 'a * 'b *)
+open Globalenvs (* Genv: type ('f, 'v) t  *)
+open Integers
+open MachineModel (* builtin0, builtin1 (EVM built-in) *)
+
+type genv = { 
+    genv_vars : ident list; 
+    genv_funcs : ident list;
+    genv_methods : Int.int list; 
+    genv_defs : coq_type PTree.t;
+    genv_fundefs : coq_function PTree.t;
+    genv_methoddefs : coq_function option IntMap.t;
+    genv_constructor : coq_function option 
+  }
+
+*)
+(* function_selector_intval_of_method: this one exists in abi.ml ........ *)
+let make_methname m = coq_Z_of_int (1)
+
+let rec coqlist_of_list =
+  let open Datatypes in
+  function
+  | [] -> Coq_nil
+  | x::xs -> (Coq_cons (x, coqlist_of_list xs))
+
+(* let rec gen_identlist =
+  let open AST in 
+  function
+  | [] -> []
+  | x :: xs -> () *)
+let rec filter_map f ls =
+  match ls with
+  | [] -> []
+  | x::xs -> match f x with
+        | Some y -> y :: filter_map f xs
+        | None -> filter_map f xs
+
+let gen_object_methods gen_methodname gen_method o =
+  let open Datatypes in
+  coqlist_of_list
+    (filter_map
+    (fun m ->
+    Some (Coq_pair (gen_methodname m,
+        gen_method o))
+    ) o )
+
+
+let rec add_genv_methods methods ge =
+  let open Globalenvs in
+  match methods with
+  | Coq_nil -> ge
+  | Coq_cons (p, rest) ->
+    let Coq_pair (sig0, fundef) = p in
+    let r = add_genv_methods rest ge in
+    { genv_vars = r.genv_vars; genv_funcs = r.genv_funcs; genv_methods =
+    (Coq_cons (sig0, r.genv_methods)); genv_defs = r.genv_defs;
+    genv_fundefs = r.genv_fundefs; genv_methoddefs =
+    (IntMap.set sig0 (Some fundef) r.genv_methoddefs); genv_constructor =
+    r.genv_constructor }
+
+
+let translatetoMinic (sinterface, simplementation) = 
+  let open Datatypes in
+  let open Language in
+  let open Globalenvs in 
+  let open Maps0 in
+    (* let global_var = (backend_ident_of_globvar "storageData") *)
+
+  let genv = {
+    Genv.genv_vars = (coqlist_of_list []); 
+    Genv.genv_funcs = (coqlist_of_list []) ;
+    Genv.genv_methods = (coqlist_of_list []); 
+    Genv.genv_defs = PTree.empty;
+    Genv.genv_fundefs = PTree.empty;
+    (* (IntMap.init None) *)
+    Genv.genv_methoddefs = add_genv_methods (Int.int, gen_object_methods(make_methname 1, (gen_methoddef), (List.hd simplementation.smethods))) ; 
+    Genv.genv_constructor = None;
+  }
+  in genv
+
 
 
 (* Print MiniC expressions/statements, for debugging purposes. *)
-
-
 let rec string_of_ctype = 
   let open Ctypes in
   function
@@ -137,6 +301,12 @@ let rec string_of_expr = function
   | Ehashderef (e1,e2,t) -> ("Ehashderef("^string_of_expr e1 ^","^string_of_expr e2^","^string_of_ctype t^")")
   | Ecall0 (bt,t) -> "Ecall0(BUILTIN,TYPE)"
   | Ecall1 (bt,e,t) -> "Ecall0(BUILTIN,EXPR,TYPE)"
+
+let rec string_of_params = 
+  let open Datatypes in
+  function
+  | Coq_cons (Coq_pair(id, t) , params) -> "("^string_of_int (int_of_positive id) ^","^string_of_ctype t ^")::"^ string_of_params params
+  | Coq_nil -> "nil"
 
 
 
