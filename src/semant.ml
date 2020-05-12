@@ -191,8 +191,11 @@ let check (signature, implementation) =
                       ^ (string_of_typ key_type) ^ " is required in "
                       ^ string_of_expr e
             in
-            if key_type = type2 then
-            sexpr2
+            if key_type = type2 then 
+            match key_type with
+            Bool | Int | Uint("uint") | Address("ADDRESS") -> sexpr2
+            | _ -> raise (Failure ("Type " ^ string_of_typ key_type ^
+            " is not allowed as key type in map " ^ string_of_expr e ))
             else 
             raise (Failure key_err)
         in
