@@ -91,7 +91,30 @@ let check (signature, implementation) =
 
   let check_func func = 
 
-    let _ = find_func (string_of_expr func.methodname) in
+    let check_args_type var1 t2 = 
+      let check_type x1 t1 t2 =  let tag = (t1 = t2)
+      and unmatch_err = "function argument " ^ string_of_expr x1 ^ " has type " 
+      ^ string_of_typ t1 ^ " ,which is unmatch with declaration type " ^ string_of_typ t2 in
+        match tag with 
+        true -> t1
+        | false -> raise (Failure unmatch_err)
+      in
+      match var1, t2 with
+      Var(x1, t1), t2 -> check_type x1 t1 t2
+      | _, _ -> raise (Failure "Not a legal variables in arguments")
+
+    in
+
+    let func_decl = find_func (string_of_expr func.methodname) in
+
+    let params_types = match func_decl with 
+      Methodecls(expr, typli, typ) -> typli
+      | _ -> raise (Failure "Not legal method")
+    in
+    
+    (* Check wether variable argument type matches with declaration *)
+
+    let _ = (List.map2 check_args_type func.params params_types) in
 
     let add_var_args map var =
       let dup_err v = "duplicate variable " ^ (string_of_expr v) ^ " in method arguments"
