@@ -6,7 +6,7 @@ type typ =
 	| Uint of string 
 	| Address of string
 	| Void of string
-	| Mapstruct of typ list * typ list
+	| Mapstruct of typ list * typ
 
 
 (* Need change *)
@@ -103,7 +103,7 @@ let rec string_of_typ = function
 	| Uint(x) ->  "uint(" ^ x ^ ")"
 	| Address(x) ->  "address(" ^ x ^ ")"
 	| Void(x) ->  "void(" ^ x ^ ")"
-	| Mapstruct(x, y) ->  "Mapstruct(" ^ String.concat " " (List.map string_of_typ x) ^ String.concat " " (List.map string_of_typ y) ^ ")"
+	| Mapstruct(x, y) ->  "Mapstruct(" ^ String.concat " " (List.map string_of_typ x) ^ string_of_typ y ^ ")"
 
 let rec string_of_expr = function
 	| NumLit(l) -> "NumLit(" ^ string_of_int l ^ ")"
@@ -119,7 +119,7 @@ let rec string_of_expr = function
 	| Voidlit(s) -> "Void: " ^ s
 
 
-	let rec string_of_decl = function
+let rec string_of_decl = function
 	| Var(x , t) -> "Var(" ^ string_of_expr x ^ ": " ^ string_of_typ t ^ ")"
 	| TypeAssigndecl(l, t) -> "TypeAssign(" ^ string_of_expr l  ^ ": " ^ string_of_typ t ^ ")\n"
 	| MapAssigndecl (l, t) -> "map " ^ string_of_expr l ^ " " ^ (string_of_typ t) ^ "\n"
