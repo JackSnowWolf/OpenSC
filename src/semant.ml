@@ -117,8 +117,8 @@ let check (signature, implementation) =
 
     let func_decl = find_func (string_of_expr func.methodname) in
 
-    let params_types = match func_decl with 
-      Methodecls(expr, typli, typ) -> typli
+    let params_types, return_type = match func_decl with 
+      Methodecls(expr, typli, typ) -> (typli, typ)
       | _ -> raise (Failure "Not legal method")
     in
     
@@ -306,14 +306,27 @@ let check (signature, implementation) =
         else raise (Failure err)
       | Voidlit(s) -> (Void("void"), SVoidlit(s) )
     in
-    
+
+    let sreturns = 
+      let (t, sx) = check_expr func.returns in
+      match t with 
+      Void("Env") -> (return_type, sx)
+      | _ -> if t = return_type then (t, sx) 
+      else 
+        let return_type_unmatch_err = "Return type of method " ^ (string_of_expr func.methodname)
+        ^ " is: " ^ (string_of_typ return_type) ^ ",\n with is unmatch with "
+        ^ " expression: " ^ (string_of_sexpr (t, sx)) in 
+        if t = return_type then (t, sx)
+        else raise (Failure return_type_unmatch_err)
+
+    in
     { 
       smethodname = sfunc func.methodname;
       sparams = func.params;
       sguard_body = List.map check_expr func.guard_body;
       sstorage_body = List.map check_expr func.storage_body;
       seffects_body = List.map check_expr func.effects_body;
-      sreturns = check_expr func.returns;
+      sreturns = sreturns;
     }
   in
 
