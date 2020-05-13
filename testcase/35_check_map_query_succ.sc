@@ -1,26 +1,30 @@
--- test case: find variable type succ
+/- test case -/
 
-signature SimpleStorage {
-    storage tag : Bool;
-    constructor c : void -> void;
-    method set : (UInt, Bool) -> void;
+signature TOKEN{
+
+  storage supply : UInt;
+
+  map balances : (Address) => UInt;
+
+  constructor c : UInt -> void;
+  method balanceOf : (Address) -> UInt;
 }
 
--- implementation
 
-constructor c (){
+/- implementation -/
+
+constructor c (s : UInt){
   storage
+    supply                |-> s;
+    balances[Env.sender]  |-> s;
   returns void;
 }
 
-method set(x: UInt, y: Bool) {
-	guard{
-        x > 0;
-    }
-	storage{
-        tag     |-> y;
-    }
-	effects{}
-	returns void;
-}
-
+method balanceOf (a : Address){
+  guard{
+    Env.value == 0;
+  }
+  storage{}
+  effects{}
+  returns balances[(a)];
+  }
