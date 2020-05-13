@@ -85,6 +85,7 @@ id_ok:
 
 expr_list:
   /*nothing*/ { [] }
+	| expr { [$1] }
   | expr SEMI expr_list  { $1 :: $3 }
 
 expr:
