@@ -1,26 +1,25 @@
--- test case: find variable type succ
+/- test case -/
 
 signature SimpleStorage {
-    storage tag : Bool;
-    constructor c : void -> void;
-    method set : (UInt, Bool) -> void;
+    storage storedData : int;
+    constructor c : UInt -> void;
+    method set : (int, UInt) -> void;
 }
 
--- implementation
+/- implementation -/
 
-constructor c (){
+constructor c (s : UInt){
   storage
+    storedData              |-> s;
   returns void;
 }
 
-method set(x: UInt, y: Bool) {
-	guard{
-        x > 0;
-    }
+method set(x: int, y: UInt) {
+	guard{}
 	storage{
-        tag     |-> y;
+        storedData     |-> x * y;
+        storedData     |-> storedData / y;
     }
 	effects{}
-	returns void;
+	returns voidlit;
 }
-

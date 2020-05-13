@@ -1,4 +1,4 @@
--- test case: find variable fail
+/- test case: find variable fail -/
 
 signature SimpleStorage {
     storage storedData : UInt;
@@ -6,7 +6,7 @@ signature SimpleStorage {
     constructor c : UInt -> void;
 }
 
--- implementation
+/- implementation -/
 
 constructor c (s : UInt){
   storage

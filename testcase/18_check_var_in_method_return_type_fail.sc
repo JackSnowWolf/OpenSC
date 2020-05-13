@@ -1,9 +1,9 @@
-/- test case -/
+/- test case: find variable in method successful -/
 
 signature SimpleStorage {
-    storage storedData : int;
+    storage storedData : UInt;
     constructor c : UInt -> void;
-    method set : (int, UInt) -> void;
+    method set : (int, UInt) -> int;
 }
 
 /- implementation -/
@@ -16,10 +16,7 @@ constructor c (s : UInt){
 
 method set(x: int, y: UInt) {
 	guard{}
-	storage{
-        storedData     |-> x + y;
-        storedData     |-> storedData - y;
-    }
+	storage{}
 	effects{}
-	returns voidlit;
+	returns y;
 }

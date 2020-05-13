@@ -14,6 +14,9 @@ and sx =
 	| SMapexpr of sexpr * sexpr list 
 	| SBinop of sexpr * op * sexpr
 	| SLogexpr of sexpr * sexpr list
+	| SStorageassign of sexpr * sexpr 
+	| SComparsion of sexpr * op * sexpr
+	| SVoidlit of string
 
 
 type sconsturctor_def ={
@@ -30,7 +33,7 @@ type smethod_def = {
 	sguard_body: sexpr list;
 	sstorage_body: sexpr list;
 	seffects_body: sexpr list;
-	sreturns: typ;
+	sreturns: sexpr;
 }
 
 type sinterface_def = {
@@ -57,6 +60,9 @@ let rec string_of_sexpr (t, e) =
 	| SMapexpr (l1, l2) -> "Mapexpr(" ^ string_of_sexpr l1 ^ String.concat " " (List.map string_of_sexpr l2) ^ ")"
 	| SBinop(e1, op, e2) ->  "Binop(" ^ (string_of_sexpr e1) ^ " " ^ (string_of_op op) ^ " " ^ (string_of_sexpr e2) ^ ")"
 	| SLogexpr(e, el) -> "Log(" ^ string_of_sexpr e ^ " " ^ String.concat " " (List.map string_of_sexpr el) ^ ")"
+	| SStorageassign(e1, e2) -> "Assign: " ^ (string_of_sexpr e1) ^ " <- " ^ (string_of_sexpr e2)
+	| SComparsion(e1, op, e2) ->  "Comparsion: " ^ (string_of_sexpr e1) ^ " " ^ (string_of_op op) ^ " " ^ (string_of_sexpr e2)
+	| SVoidlit(s) -> "Void: " ^ s
 	(* | Svar(x, t) -> x ^ string_of_typ t *)
 	(* | StypeAssign(x, y)-> "Type Assign: " ^ string_of_sexpr x  ^ " " ^ string_of_typ y ^ "\n" *)
 	(* | SmapAssign(x, t1, t2) -> "Map assign: " ^ string_of_sexpr x ^ " " ^ (string_of_typ t1) ^ (string_of_typ t2) ^ "\n" *)
@@ -87,7 +93,7 @@ let string_of_smethoddef methoddecl =
 	"\n guard\n  " ^ String.concat "\n  " (List.map string_of_sexpr methoddecl.sguard_body) ^
 	"\n storage\n  " ^ String.concat "\n  " (List.map string_of_sexpr methoddecl.sstorage_body) ^
 	"\n effects\n  " ^ String.concat "\n  " (List.map string_of_sexpr methoddecl.seffects_body) ^
-	"\n returns " ^ string_of_typ methoddecl.sreturns ^ "\n\n"
+	"\n returns " ^ string_of_sexpr methoddecl.sreturns ^ "\n\n"
 
 let string_of_simplementation implementdecl =
   "--implementation\n\n" ^

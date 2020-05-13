@@ -2,6 +2,7 @@
 
 signature SimpleStorage {
     storage storedData : int;
+    storage tag : Bool;
     constructor c : UInt -> void;
     method set : (int, UInt) -> void;
 }
@@ -17,8 +18,7 @@ constructor c (s : UInt){
 method set(x: int, y: UInt) {
 	guard{}
 	storage{
-        storedData     |-> x + y;
-        storedData     |-> storedData - y;
+        tag |-> (x == 5 * y) and (y != 10) or True;
     }
 	effects{}
 	returns voidlit;

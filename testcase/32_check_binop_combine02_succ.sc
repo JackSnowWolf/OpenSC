@@ -15,11 +15,10 @@ constructor c (s : UInt){
 }
 
 method set(x: int, y: UInt) {
-	guard{}
-	storage{
-        storedData     |-> x + y;
-        storedData     |-> storedData - y;
+	guard{
+        (x == 5 * y) and (y != 10);
     }
+	storage{}
 	effects{}
 	returns voidlit;
 }

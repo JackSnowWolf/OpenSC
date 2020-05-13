@@ -5,8 +5,7 @@ let letter = ['a'-'z' 'A'-'Z']
 
 rule token = parse
    [' ' '\t' '\r' '\n'] 	{ token lexbuf }
-  |'-' 				 					{comment 1 lexbuf} (* comment *)
-  |"/-"				 					{multicomment 1 lexbuf} (* multiple comment *)
+  |"/-"				 					{multicomment lexbuf} (* multiple comment *)
   | '('             	 { LPAREN }
 	| ')'             	 { RPAREN }
 	| '{'             	 { LBRACE }
@@ -34,6 +33,7 @@ rule token = parse
 	| "Bool"          	 { BOOL }
 	| "Address"			 		 { ADDRESSTYPE("ADDRESS") }
 	| "map"				 			 { MAP } (* as hash table *)
+	| "voidlit"					 {VOID("voidlit")} (* void is a literal type ... *)
 	| "void"				 			 { UNIT("void") } (* instead of () use void *)
 	(* end of types *)
 	(* type of assignement*)
@@ -66,10 +66,6 @@ rule token = parse
 	| letter (digits | letter | '_')* as lem { ID(lem) }
 	| eof { EOF }
 
-	and comment lvl = parse
-	  "\n"  { if lvl = 1 then token lexbuf else comment (lvl - 1) lexbuf  }
-	| _     { comment lvl lexbuf }
-
-	and multicomment lvl = parse
-	  "-/"  { if lvl = 1 then token lexbuf else comment (lvl - 1) lexbuf  }
-	| _     { multicomment lvl lexbuf }
+	and multicomment = parse
+	  "-/"  { token lexbuf }
+	| _     { multicomment lexbuf }

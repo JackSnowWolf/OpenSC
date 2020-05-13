@@ -230,7 +230,7 @@ let rec coqlist_of_list =
   let open AST in 
   function
   | [] -> []
-  | x :: xs -> (positive_of_int id) :: (gen_identlist xs)*)
+  | x :: xs -> *)
   
 (* let rec filter_map f ls =
   match ls with
@@ -378,5 +378,12 @@ let gen_object o =
       Coq_nil (* funcs: (id, coq_fun) prod list. Only the lower layers have funcs *)
       (gen_object_methods make_methname gen_methoddef o) (* methods: (Int.int, coq_fun) prod list *)
       None
+      
+(* let gen_identlist =
+  let open AST in
+  coqlist_of_list 
+  (List.map 
+    (fun x -> backend_ident_of_globvar x) 
+  TypeAssigndecl) *)
 
 let minicgen (sinterface, simplementation) = gen_object simplementation
