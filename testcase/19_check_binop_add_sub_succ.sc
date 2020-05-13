@@ -1,4 +1,4 @@
-/- test case: find variable in method successful -/
+/- test case -/
 
 signature SimpleStorage {
     storage storedData : int;

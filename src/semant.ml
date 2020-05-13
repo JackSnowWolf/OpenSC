@@ -293,7 +293,7 @@ let check (signature, implementation) =
         else if t1 = t2 then
           (* Determine expression type based on operator and operand types *)
           let t = match op with
-            | LGT | RGT | LGTEQ | RGTEQ when t1 = Uint("uint") || t1 = Int -> Bool
+            | Equal | Neq | LGT | RGT | LGTEQ | RGTEQ when t1 = Uint("uint") || t1 = Int -> Bool
             | _ -> raise (Failure err)
           in
           (t, SComparsion((t1, e1'), op, (t2, e2')))
