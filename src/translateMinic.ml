@@ -21,9 +21,9 @@ let coq_Z_of_int n =
   else if n > 0 then Zpos (positive_of_int n)
   else Zneg (positive_of_int (-n))
 
-(* let rec coqlist_of_list = function
+let rec coqlist_of_list = function
 | [] -> Datatypes.Coq_nil
-| x::xs -> Datatypes.(Coq_cons (x, coqlist_of_list xs)) *)
+| x::xs -> Datatypes.(Coq_cons (x, coqlist_of_list xs))
 
 
 let rec int_of_positive p =
