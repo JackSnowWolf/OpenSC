@@ -85,20 +85,14 @@ let check (signature, implementation) =
     | StrLit l -> (Void("void"), SStrLit l)
     (* check Id retrun with the correct type, keep Int for now *)
     | Id x -> (Int, SId x)
-    | EnvLit(x, y) -> (Int, SEnvLit(x,y))
+    | EnvLit(x, y) -> (Void("Env"), SEnvLit(x,y))
     | Mapexpr(e1, e2) -> (Int, SMapexpr(check_expr e1, List.map check_expr e2))
     | Binop(e1, op, e2) -> (Int, SBinop(check_expr e1, op, check_expr e2))
-    | Logexpr(e1, e2) -> (Int, SLogexpr(check_expr e1, List.map check_expr e2))
+    | Logexpr(e1, e2) -> (Void("void"), SLogexpr(check_expr e1, List.map check_expr e2))
+    | Storageassign (e1, e2) -> (Int, SStorageassign(check_expr e1, check_expr e2))
+    | Comparsion (e1, op, e2) -> (Int, SComparsion(check_expr e1, op, check_expr e2))
+    | Voidlit(s) -> (Void("void"), SVoidlit(s) )
   in
-
-  (* let check_decl = function
-    | Var(expr,typ) -> 
-    | TypeAssigndecl(expr,typ) ->
-    | MapAssigndecl(expr,typ) -> 
-    | Eventdecl(expr,typli) -> 
-    | Constructordecl(expr,typ,typ) -> 
-    | Methodecls(expr,typli,typ) -> 
-  in *)
 
   let check_func func = 
 
@@ -128,20 +122,35 @@ let check (signature, implementation) =
       | _ -> raise (Failure "Not legal method")
     in
     
-    (* Check argument types length matches with declaration  *)
-    let _ = let typ_len_func = List.length func.params
-      in let typ_len_decl = List.length params_types in
-      match typ_len_func, typ_len_decl with
-      typ_len_func, typ_len_decl when (typ_len_func > typ_len_decl)
-      -> raise (Failure ("Redundant arguments in method " ^ string_of_expr func.methodname))
-      | typ_len_func, typ_len_decl when (typ_len_func < typ_len_decl)
-      -> raise (Failure ("Missing arguments in method " ^ string_of_expr func.methodname))
-      | _, _ -> typ_len_func
+    (* If the only arg is void and no arguments in method, then skip check args *)
+    let skip_check_args =  
+      if List.length params_types = 1 then 
+        let first_arg = List.hd params_types in 
+        match first_arg with 
+        Void("void") -> if List.length func.params = 0 then true else false
+        | _ -> false
+      else false
+
+
     in
 
-    (* Check whether variable argument type matches with declaration *)
-    let _ = (List.map2 check_args_type func.params params_types) in
+    let _ = if skip_check_args then true else
 
+      (* Check argument types length matches with declaration  *)
+      let _ = let typ_len_func = List.length func.params
+        in let typ_len_decl = List.length params_types in
+        match typ_len_func, typ_len_decl with
+        typ_len_func, typ_len_decl when (typ_len_func > typ_len_decl)
+        -> raise (Failure ("Redundant arguments in method " ^ string_of_expr func.methodname))
+        | typ_len_func, typ_len_decl when (typ_len_func < typ_len_decl)
+        -> raise (Failure ("Missing arguments in method " ^ string_of_expr func.methodname))
+        | _, _ -> typ_len_func
+      in
+
+      (* Check whether variable argument type matches with declaration *)
+      let _ = (List.map2 check_args_type func.params params_types) in false
+
+    in
     let add_var_args map var =
       let dup_err v = "duplicate variable " ^ (string_of_expr v) ^ " in method arguments"
       and make_err er = raise (Failure er)
@@ -172,7 +181,7 @@ let check (signature, implementation) =
       | StrLit l -> (Void("void"), SStrLit l)
       (* check Id retrun with the correct type, keep Int for now *)
       | Id x -> (find_var x, SId x)
-      | EnvLit(x, y) -> (Int, SEnvLit(x,y))
+      | EnvLit(x, y) -> (Void("Env"), SEnvLit(x,y))
       | Mapexpr(e1, e2) as e -> 
         let id_err = string_of_expr e1 ^ " is not a id in " ^ string_of_expr e in
         let (t1, e1') = match e1 with 
@@ -190,14 +199,16 @@ let check (signature, implementation) =
                       ^ " has type " ^ (string_of_typ type2) ^ ", but type "
                       ^ (string_of_typ key_type) ^ " is required in "
                       ^ string_of_expr e
-            in
-            if key_type = type2 then 
+            in 
+            
+            if type2 = Void("Env") then sexpr2
+            else if key_type = type2 then 
             match key_type with
             Bool | Int | Uint("uint") | Address("ADDRESS") -> sexpr2
             | _ -> raise (Failure ("Type " ^ string_of_typ key_type ^
             " is not allowed as key type in map " ^ string_of_expr e ))
-            else 
-            raise (Failure key_err)
+            else
+              raise (Failure key_err)
         in
         let value_type = match t1 with
           Mapstruct(key_typli, value_type) -> 
@@ -219,38 +230,81 @@ let check (signature, implementation) =
           | _ -> raise (Failure type_err)
         in 
         (value_type, SMapexpr((t1, e1'), e2'))
-      
+      (* Binop : Add | Sub | Times | Divide | And | Or *)
       | Binop(e1, op, e2) as e -> 
         let (t1, e1') = check_expr e1
         and (t2, e2') = check_expr e2 in
-        let err = "illegal binary operator " ^
+        let err = "Illegal binary operator " ^
                   string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
                   string_of_typ t2 ^ " in " ^ string_of_expr e
         in
         (* All binary operators require operands of the same type*)
-        if t1 = t2 then
+        
+        if t1 = Void("Env") then
+          (t2, SBinop((t1, e1'), op, (t2, e2')))
+        else if t2 = Void("Env") then
+          (t1, SBinop((t1, e1'), op, (t2, e2')))
+        else if t1 = t2 then
           (* Determine expression type based on operator and operand types *)
           let t = match op with
             Add | Sub | Times | Divide when t1 = Uint("uint") -> Uint("uint")
             | Add | Sub | Times | Divide when t1 = Int -> Int
-            | Equal | Neq  -> Bool
-            | LGT | RGT | LGTEQ | RGTEQ when t1 = Uint("uint") || t1 = Int -> Bool
             | And | Or when t1 = Bool -> Bool
-            | PASSIGN -> Void("void")
             | _ -> raise (Failure err)
           in
           (t, SBinop((t1, e1'), op, (t2, e2')))
         else if (t1 = Uint("uint") && t2 = Int) || (t1 = Int && t2 = Uint("uint")) then
           let t = match op with
           Add | Sub | Times | Divide -> Int
-          | Equal | Neq | LGT | RGT | LGTEQ | RGTEQ -> Bool
-          | PASSIGN -> Void("void")
           | _ -> raise (Failure err)
           in
           (t, SBinop((t1, e1'), op, (t2, e2')))
         else raise (Failure err)
 
-      | Logexpr(e1, e2) -> (Int, SLogexpr(check_expr e1, List.map check_expr e2))
+      | Logexpr(e1, e2) -> (Void("Log"), SLogexpr(check_expr e1, List.map check_expr e2))
+      | Storageassign (e1, e2) as e -> 
+        let (t1, e1') = check_expr e1
+        and (t2, e2') = check_expr e2 in
+        let err = "Illegal storage assign: " ^
+                  string_of_typ t1 ^ " <- " ^
+                  string_of_typ t2 ^ " in " ^ string_of_expr e
+        in
+        (* All binary operators require operands of the same type*)
+        if t2 = Void("Env") && t1 != Void("Env") then
+          (t1, SStorageassign((t1, e1'), (t2, e2')))
+        
+        else if t1 = t2 then
+          (Void("void"), SStorageassign((t1, e1'), (t2, e2')))
+        else raise (Failure err)
+
+      (* Comparsion : Equal | Neq | LGT | RGT | LGTEQ | RGTEQ *)
+      | Comparsion (e1, op, e2) as e -> 
+        let (t1, e1') = check_expr e1
+        and (t2, e2') = check_expr e2 in
+        let err = "Illegal binary operator " ^
+                  string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
+                  string_of_typ t2 ^ " in " ^ string_of_expr e
+        in
+        (* All binary operators require operands of the same type*)
+        if t1 = Void("Env") then
+          (t2, SComparsion((t1, e1'), op, (t2, e2')))
+        else if t2 = Void("Env") then
+          (t1, SComparsion((t1, e1'), op, (t2, e2')))
+        else if t1 = t2 then
+          (* Determine expression type based on operator and operand types *)
+          let t = match op with
+            | LGT | RGT | LGTEQ | RGTEQ when t1 = Uint("uint") || t1 = Int -> Bool
+            | _ -> raise (Failure err)
+          in
+          (t, SComparsion((t1, e1'), op, (t2, e2')))
+        else if (t1 = Uint("uint") && t2 = Int) || (t1 = Int && t2 = Uint("uint")) then
+          let t = match op with
+          | Equal | Neq | LGT | RGT | LGTEQ | RGTEQ -> Bool
+          | _ -> raise (Failure err)
+          in
+          (t, SComparsion((t1, e1'), op, (t2, e2')))
+        else raise (Failure err)
+      | Voidlit(s) -> (Void("void"), SVoidlit(s) )
     in
     
     { 
@@ -259,7 +313,7 @@ let check (signature, implementation) =
       sguard_body = List.map check_expr func.guard_body;
       sstorage_body = List.map check_expr func.storage_body;
       seffects_body = List.map check_expr func.effects_body;
-      sreturns = func.returns;
+      sreturns = check_expr func.returns;
     }
   in
 

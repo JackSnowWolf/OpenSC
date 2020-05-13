@@ -33,7 +33,7 @@ rule token = parse
 	| "Bool"          	 { BOOL }
 	| "Address"			 		 { ADDRESSTYPE("ADDRESS") }
 	| "map"				 			 { MAP } (* as hash table *)
-	| "Voidlit"					 {VOID("voidlit")} (* void is a literal type ... *)
+	| "voidlit"					 {VOID("voidlit")} (* void is a literal type ... *)
 	| "void"				 			 { UNIT("void") } (* instead of () use void *)
 	(* end of types *)
 	(* type of assignement*)

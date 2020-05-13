@@ -1,4 +1,4 @@
--- A simple storage program
+/- A simple storage program -/
 
 signature SimpleStorage {
     storage storedData : UInt;
@@ -11,17 +11,10 @@ constructor c (){
 	storage
 	returns void;
 }
-method get (){
-	guard{}
-	storage{}
-	effects{}
-	returns storedData;
-}
 
 method set(x: UInt) {
 	guard{
-		(x + a) > 0 ;
-		hahahaha > 0;
+		x > 0 ;
 	}
 	storage{
     	storedData |-> x;
