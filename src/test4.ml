@@ -19,7 +19,7 @@ let _ =
           transform
             (List.rev (caml_list program))
             entrypoint in
-            (* print_endline (show_genv minicAST);  *)
+            print_endline (show_genv minicAST); 
             print_endline (assemble asm)
 
 
