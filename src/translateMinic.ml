@@ -320,7 +320,7 @@ let rec string_of_params =
   | Coq_nil -> "nil"
 
 
-let gen_methoddef m =
+(* let gen_methoddef m =
   let open Datatypes in
   let dest = builtinBase_local_ident_start in  
   (* let is_pure, has_return = method_classify mt in *)
@@ -334,7 +334,7 @@ let gen_methoddef m =
             (Sreturn Tvoid))
     else *)
       body (* ) *)
-  }
+  } *)
 
 (* let gen_methoddef objname m =
   let open Datatypes in
@@ -373,9 +373,10 @@ let gen_object o =
   let make_methname m = coq_Z_of_int 1101101111 in
     new_genv (* new_genv: vars -> funcs -> methods -> constructor  *)
       (*(gen_object_fields o) (* vars: (ident, coq_type PTree.t) prod list *) *)
-      Coq_nil
+      (* Coq_nil *)
+      (coqlist_of_list [Coq_pair(backend_ident_of_globvar "test", gen_ctype Int)])
       Coq_nil (* funcs: (id, coq_fun) prod list. Only the lower layers have funcs *)
       (gen_object_methods make_methname gen_methoddef o) (* methods: (Int.int, coq_fun) prod list *)
-      None  
+      None
 
 let minicgen (sinterface, simplementation) = gen_object simplementation
