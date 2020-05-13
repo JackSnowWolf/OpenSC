@@ -21,13 +21,12 @@
 %left AND
 
 %left LT  */
+%right PASSIGN
+%left EQ NEQ LGT LGTEQ RGTEQ RGT 
+%left OR AND
 
 %left ADD SUB
 %left MUL DIVIDE
-
-%left PASSIGN
-%left EQ NEQ LGT LGTEQ RGTEQ RGT GE AND
-
 
 %%
 

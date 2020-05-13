@@ -1,7 +1,9 @@
--- token implementation satisfying the ERC20 standard:
--- https://eips.ethereum.org/EIPS/eip-20
+/- 
+  token implementation satisfying the ERC20 standard:
+   https://eips.ethereum.org/EIPS/eip-20
 
--- interface
+   interface
+-/
 
 signature TOKEN{
 
@@ -23,7 +25,7 @@ signature TOKEN{
 }
 
 
--- implementation
+/- implementation -/
 
 constructor c (s : UInt){
   storage
@@ -64,9 +66,9 @@ method transfer (a : Address, v : UInt){
   guard{
     Env.value == 0;
     balances[(Env.sender)] >= v;
-    -- overflow checking
+    /- overflow checking -/
     balances[(a)] > balances[(a)] - v;
-    balances[(Env.sender)] > balances[Env.sender] + v;
+    balances[(Env.sender)] > balances[(Env.sender)] + v;
   }
   storage{
     balances[(Env.sender)] |-> balances[(Env.sender)] - v;
@@ -95,23 +97,21 @@ method approve (spender : Address, v : UInt){
 
 method transferFrom (from : Address, to : Address, v : UInt){
 
-  guard{
-
+  guard{ 
     Env.value == 0;
-    v =/= 0;
-    balances[from] >= v;
+    balances[(from)] >= v;
     allowances[(Env.sender, from)] >= v;
-
-    -- overflow checking
-    (allowances[(Env.sender, from)] - v) < allowances[(Env.sender, from)];
-    (balances[from] - v) < balances[from];
-    (balances[to] + v) > balances[to];
+    
+    /- overflow checking -/
+    
+    allowances[(Env.sender, from)] - v < allowances[(Env.sender, from)];
+    balances[(from)] - v < balances[(from)];
+    balances[(to)] + v > balances[(to)];
   }
   storage{
-
     allowances[(Env.sender, from)]  |-> allowances[(Env.sender, from)] - v;
-    balances[from]                  |-> balances[from] - v;
-    balances[to]                    |-> balances[to] + v;
+    balances[(from)]                  |-> balances[(from)] - v;
+    balances[(to)]                    |-> balances[(to)] + v;
   }
   effects{}
   returns True;
