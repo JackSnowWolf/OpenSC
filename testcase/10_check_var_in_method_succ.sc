@@ -1,4 +1,4 @@
--- test case: find variable fail
+/- test case: find variable in method successful -/
 
 signature SimpleStorage {
     storage storedData : UInt;
@@ -6,7 +6,7 @@ signature SimpleStorage {
     method set : (UInt, UInt) -> void;
 }
 
--- implementation
+/- implementation -/
 
 constructor c (s : UInt){
   storage
@@ -22,6 +22,6 @@ method set(x: UInt, y: UInt) {
         storedData     |-> y;
     }
 	effects{}
-	returns void;
+	returns voidlit;
 }
 
