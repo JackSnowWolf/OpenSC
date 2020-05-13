@@ -6,7 +6,7 @@ type typ =
 	| Uint of string 
 	| Address of string
 	| Void of string
-	| Mapstruct of typ list * typ
+	| Mapstruct of typ list * typ list
 
 
 (* Need change *)
@@ -24,6 +24,9 @@ type expr =
 	| Mapexpr of expr * expr list 
 	| Binop of expr * op * expr
 	| Logexpr of expr * expr list
+	| Storageassign of expr * expr 
+	| Comparsion of expr * op * expr
+	| Voidlit of string
 
 type decls = 
 	| Var of expr * typ
@@ -53,7 +56,7 @@ type method_def = {
 	guard_body: expr list;
 	storage_body: expr list;
 	effects_body: expr list;
-	returns: typ;
+	returns: expr;
 }
 
 type interface_def = {
@@ -100,7 +103,7 @@ let rec string_of_typ = function
 	| Uint(x) ->  "uint(" ^ x ^ ")"
 	| Address(x) ->  "address(" ^ x ^ ")"
 	| Void(x) ->  "void(" ^ x ^ ")"
-	| Mapstruct(x, y) ->  "Mapstruct(" ^ String.concat " " (List.map string_of_typ x) ^ ") => " ^ (string_of_typ y) 
+	| Mapstruct(x, y) ->  "Mapstruct(" ^ String.concat " " (List.map string_of_typ x) ^ String.concat " " (List.map string_of_typ y) ^ ")"
 
 let rec string_of_expr = function
 	| NumLit(l) -> "NumLit(" ^ string_of_int l ^ ")"
@@ -108,9 +111,12 @@ let rec string_of_expr = function
 	| StrLit(l) -> "StrLit(" ^ l ^ ")"
 	| Id(x) -> x
 	| EnvLit(l, l2) -> "EnvLit(" ^ l ^ (l2) ^ ")"
-	| Mapexpr (l1, l2) -> "Mapexpr(" ^ string_of_expr l1 ^ String.concat " " (List.map string_of_expr l2) ^ ")"
+	| Mapexpr (l1, l2) -> "Mapexpr(" ^ string_of_expr l1 ^ " elements:" ^ String.concat " " (List.map string_of_expr l2) ^ ")"
 	| Binop(e1, op, e2) ->  "Binop(" ^ (string_of_expr e1) ^ " "  ^ (string_of_op op) ^ " " ^ (string_of_expr e2) ^ ")"
 	| Logexpr(e, el) -> "Logexpr(" ^ " " ^ string_of_expr e ^ " " ^ String.concat " " (List.map string_of_expr el) ^ ")"
+	| Storageassign (e1, e2) -> "StorageAssign: " ^ string_of_expr e1 ^ " PASSIGN: |->" ^ string_of_expr e2 ^ ")"
+	| Comparsion (e1, op, e2) ->" Comparsion: " ^ string_of_expr e1 ^ " " ^ string_of_op op ^ " " ^ string_of_expr e2
+	| Voidlit(s) -> "Void: " ^ s
 
 
 	let rec string_of_decl = function
@@ -147,7 +153,7 @@ let string_of_methoddef methoddecl =
 	"\n guard\n  " ^ String.concat "\n  " (List.map string_of_expr methoddecl.guard_body) ^
 	"\n storage\n  " ^ String.concat "\n  " (List.map string_of_expr methoddecl.storage_body) ^
 	"\n effects\n  " ^ String.concat "\n  " (List.map string_of_expr methoddecl.effects_body) ^
-	"\n returns " ^ string_of_typ methoddecl.returns ^ "\n\n"
+	"\n returns " ^ string_of_expr methoddecl.returns ^ "\n\n"
 
 
 let string_of_implementation implementdecl =
