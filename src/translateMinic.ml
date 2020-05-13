@@ -230,7 +230,7 @@ let rec coqlist_of_list =
   let open AST in 
   function
   | [] -> []
-  | x :: xs -> (positive_of_int id) :: (gen_identlist xs)*)
+  | x :: xs -> *)
   
 (* let rec filter_map f ls =
   match ls with
