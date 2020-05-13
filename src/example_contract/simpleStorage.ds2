@@ -11,14 +11,21 @@ constructor c (){
 	storage
 	returns void;
 }
+method get (){
+	guard{}
+	storage{}
+	effects{}
+	returns storedData;
+}
+
 method set(x: UInt) {
 	guard{
-		x > 0;
+		(x + a) > 0 ;
+		hahahaha > 0;
 	}
 	storage{
     	storedData |-> x;
 	}
 	effects{}
-	returns void;
+	returns voidlit;
 }
-
