@@ -40,6 +40,14 @@ let rec coqlist_of_list =
   | [] -> Coq_nil
   | x::xs -> (Coq_cons (x, coqlist_of_list xs)) 
        
+let rec filter_map f ls =
+  let open Datatypes in
+    match ls with
+    | [] -> []
+    | x::xs -> match f x with
+          | Some y -> y :: filter_map f xs
+          | None -> filter_map f xs
+
 (* end of functions to move. *)	
 
 (* id generator!!!  may need to revised  *)
@@ -178,7 +186,7 @@ let gen_methoddef m =
   let dest = builtinBase_local_ident_start in  
   (* let is_pure, has_return = method_classify mt in *)
   (* let body = gen_set_stmt  builtinBase_local_ident_start (List.hd m.sstorage_body) in *)
-  let body = (gen_assign_stmt (Int, (SId "test")) (Int, (SNumLit 12))) in
+  let body = (gen_assign_stmt (Int, (SId "storedData")) (Int, (SNumLit 12))) in
   (* let ret_type = (gen_ctype m.sreturns)in *)
   let ret_type = (gen_ctype Int) in
   { 
@@ -232,21 +240,35 @@ let gen_object_methods gen_methodname gen_method o =
       (fun m -> Coq_pair (gen_methodname m, gen_method m))
       o.smethods) 
 
-(* o= simplementation *)
-let gen_object o =
+(** gen_object_fields :
+    vars: (ident, coq_type PTree.t) prod list **)
+let gen_object_fields declist = 
+  let open Datatypes in
+  let open Globalenvs.Genv in
+  let cvtTypAss = function
+    | TypeAssigndecl(Id s, t) -> Some (Coq_pair(backend_ident_of_globvar s, gen_ctype t))
+    | _ -> None
+  in
+  coqlist_of_list (filter_map cvtTypAss declist)
+
+  (* (coqlist_of_list [Coq_pair(backend_ident_of_globvar "test", gen_ctype Int)]) *)
+
+(* (i, o) = (sinterface, simplementation) *)
+let gen_object (i, o) =
   let open Datatypes in
   let open Globalenvs.Genv in
   (* let make_funcname m = backend_ident_of_funcname o.sconsturctor_def.sname m.smethodname in *)
   (* let make_methname m = coq_Z_of_int (function_selector_intval_of_method m) in *)
-  let make_methname m = coq_Z_of_int 1101101111 in
+  (* let make_methname m = coq_Z_of_int 1101101111 in *)
+  let make_methname m = coq_Z_of_int 10 in
     new_genv (* new_genv: vars -> funcs -> methods -> constructor  *)
-      (*(gen_object_fields o) (* vars: (ident, coq_type PTree.t) prod list *) *)
-      (coqlist_of_list [Coq_pair(backend_ident_of_globvar "test", gen_ctype Int)]) (* vars: (ident, coq_type PTree.t) prod list *)
+      (gen_object_fields i.sinterfacebody) (* vars: (ident, coq_type PTree.t) prod list *)
+      (* (coqlist_of_list [Coq_pair(backend_ident_of_globvar "test", gen_ctype Int)]) (* vars: (ident, coq_type PTree.t) prod list *) *)
       Coq_nil (* funcs: (id, coq_fun) prod list. Only the lower layers have funcs *)
       (gen_object_methods make_methname gen_methoddef o) (* methods: (Int.int, coq_fun) prod list *)
       None
 
-let minicgen (sinterface, simplementation) = gen_object simplementation
+let minicgen sprogram = gen_object sprogram
 
 (** 
 open AST (* type ident = positive -> BinNums: type positive = | Coq_xI of positive | Coq_xO of positive | Coq_xH *)

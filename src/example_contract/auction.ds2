@@ -50,7 +50,7 @@ method bid (){
 
 method withdraw (){
   guard
-    withdrawals[Env.sender]  =/= 0;
+    withdrawals[Env.sender]  != 0;
   storage
     withdrawals[Env.sender]  |-> 0;
   effects
