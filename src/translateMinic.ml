@@ -93,12 +93,14 @@ let gen_binop =
   | Divide -> Odiv
   | And -> Oand
   | Or -> Oor
-  | Equal -> Oeq
+  (* | Equal -> Oeq *)
+  | PASSIGN -> Oeq
   | Neq -> One
   | RGT -> Olt
   | RGTEQ -> Ole
   | LGT -> Ogt
   | LGTEQ -> Oge
+  (* | a -> print_endline (string_of_op a) *)
 (*   | OPlt -> Olt
   | OPle -> Ole
   | OPgt -> Ogt
@@ -109,6 +111,8 @@ let gen_binop =
   | OPbitand -> Oand
   | OPbitor -> Oor
   | OPsha_2 -> Osha_2 *)
+
+ 
 
 let rec gen_rexpr e =
   let open Ctypes in
@@ -166,16 +170,22 @@ let gen_methoddef m =
   let open Datatypes in
   let dest = builtinBase_local_ident_start in  
   (* let is_pure, has_return = method_classify mt in *)
-  let body = gen_set_stmt  builtinBase_local_ident_start (List.hd m.sstorage_body) in
-  let ret_type = (gen_ctype m.sreturns)in
-  { fn_return = ret_type ;
+  (* let body = gen_set_stmt  builtinBase_local_ident_start (List.hd m.sstorage_body) in *)
+  let body = (gen_assign_stmt (Int, (SId "test")) (Int, (SNumLit 12))) in
+  (* let ret_type = (gen_ctype m.sreturns)in *)
+  let ret_type = (gen_ctype Int) in
+  { 
+    fn_return = ret_type;
     fn_params = Coq_nil;
     fn_temps  = Coq_nil; (* coqlist_of_list (gen_tempenv ((dest,mt.aMethodReturnType.aTypeCtype) :: gen_cmd_locals m.aMethodBody dest))*)
     fn_body =  (* (if has_return then
                   Ssequence (body,
 			     (Sreturn Tvoid))
 		else *)
-		  body (* ) *)
+      body
+      (* Ssequence (body,
+        (Sreturn (Some (Etempvar (positive_of_int 10,
+             ret_type))))) *)
   }
 
 (* leave for now
@@ -308,7 +318,7 @@ let rec string_of_params =
   | Coq_cons (Coq_pair(id, t) , params) -> "("^string_of_int (int_of_positive id) ^","^string_of_ctype t ^")::"^ string_of_params params
   | Coq_nil -> "nil"
 
-(* 
+
 let gen_methoddef m =
   let open Datatypes in
   let dest = builtinBase_local_ident_start in  
@@ -325,8 +335,8 @@ let gen_methoddef m =
       body (* ) *)
   }
 
-let gen_methoddef objname m =
-  let open Backend.Datatypes in
+(* let gen_methoddef objname m =
+  let open Datatypes in
   let mt = m.aMethodType in
   let dest = builtinBase_local_ident_start in  
   let is_pure, has_return = method_classify mt in
@@ -344,20 +354,27 @@ let gen_methoddef objname m =
       body)
   } *)
 
+(* (Int.int, coq_fun) prod list *)
 let gen_object_methods gen_methodname gen_method o =
-  let open Backend.Datatypes in
+  let open Datatypes in
   coqlist_of_list
     (List.map
-        (fun m -> Some (Coq_pair (gen_methodname m, gen_method o.sconsturctor_def.sname m)))
-        o.smethods) 
+      (* (fun m -> Some (Coq_pair (gen_methodname m, gen_method o.sconsturctor_def.sname m))) *)
+      (fun m -> Coq_pair (gen_methodname m, gen_method m))
+      o.smethods) 
 
+(* o= simplementation *)
 let gen_object o =
-  let open Backend.Datatypes in
-  let open Backend.Globalenvs.Genv in
+  let open Datatypes in
+  let open Globalenvs.Genv in
   (* let make_funcname m = backend_ident_of_funcname o.sconsturctor_def.sname m.smethodname in *)
-  let make_methname m = coq_Z_of_int (function_selector_intval_of_method m) in
-  new_genv (gen_object_fields o) Coq_nil
-      (gen_object_methods make_methname gen_methoddef o)
+  (* let make_methname m = coq_Z_of_int (function_selector_intval_of_method m) in *)
+  let make_methname m = coq_Z_of_int 1101101111 in
+    new_genv (* new_genv: vars -> funcs -> methods -> constructor  *)
+      (*(gen_object_fields o) (* vars: (ident, coq_type PTree.t) prod list *) *)
+      Coq_nil
+      Coq_nil (* funcs: (id, coq_fun) prod list. Only the lower layers have funcs *)
+      (gen_object_methods make_methname gen_methoddef o) (* methods: (Int.int, coq_fun) prod list *)
       None  
 
 let minicgen (sinterface, simplementation) = gen_object simplementation
