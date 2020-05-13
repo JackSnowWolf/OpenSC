@@ -204,7 +204,7 @@ let check (signature, implementation) =
             if type2 = Void("Env") then sexpr2
             else if key_type = type2 then 
             match key_type with
-            Bool | Int | Uint("uint") | Address("ADDRESS") -> sexpr2
+             Int | Uint("uint") | Address("ADDRESS") -> sexpr2
             | _ -> raise (Failure ("Type " ^ string_of_typ key_type ^
             " is not allowed as key type in map " ^ string_of_expr e ))
             else

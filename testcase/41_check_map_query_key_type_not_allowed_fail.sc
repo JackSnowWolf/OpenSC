@@ -4,10 +4,10 @@ signature TOKEN{
 
   storage supply : UInt;
 
-  map balances : (void) => UInt;
+  map balances : (Bool) => UInt;
 
   constructor c : UInt -> void;
-  method balanceOf : (int) -> UInt;
+  method balanceOf : (Bool) -> UInt;
 }
 
 
@@ -20,11 +20,11 @@ constructor c (s : UInt){
   returns void;
 }
 
-method balanceOf (a : int){
+method balanceOf (a : Bool){
   guard{
     Env.value == 0;
   }
   storage{}
   effects{}
-  returns balances[ ( voidlit ) ]
+  returns balances[(a)];
   }
