@@ -33,7 +33,7 @@ type decls =
 	| TypeAssigndecl of expr * typ
 	| MapAssigndecl of expr * typ 
 	| Eventdecl of expr * typ list
-	| Constructordecl of expr * typ * typ 
+	| Constructordecl of expr * typ list * typ 
 	| Methodecls of expr * typ list * typ
 
 (* control flow statement: if, while ?? *)
@@ -124,14 +124,9 @@ let rec string_of_decl = function
 	| TypeAssigndecl(l, t) -> "TypeAssign(" ^ string_of_expr l  ^ ": " ^ string_of_typ t ^ ")\n"
 	| MapAssigndecl (l, t) -> "map " ^ string_of_expr l ^ " " ^ (string_of_typ t) ^ "\n"
 	| Eventdecl(l ,t) ->  "event(" ^ (string_of_expr l) ^  String.concat " " (List.map string_of_typ t) ^ ")\n"
-	| Constructordecl(l, t1, t2) ->"constructor " ^ string_of_expr l^ " " ^ string_of_typ t1 ^ " " ^  string_of_typ t2 ^ "\n"
+	| Constructordecl(l, t1, t2) ->"constructor " ^ " " ^ string_of_expr l ^  String.concat " " (List.map string_of_typ t1) ^ " " ^  string_of_typ t2 ^ "\n"
 	| Methodecls (l, t1, t2) -> "method " ^ string_of_expr l ^ " "  ^ String.concat " " (List.map string_of_typ t1)  ^ (string_of_typ t2) ^ " " ^ "\n"
 
-(* let string_of_expr = function
-		NumLit(l) -> string_of_int l
-	| BooLit(true) -> "true"
-	| BooLit(false) -> "false"
-	| Id(s) -> s *)
 
 let string_of_interfacedef interfacedecl =
 	"--interface\n\n" ^
@@ -140,7 +135,7 @@ let string_of_interfacedef interfacedecl =
 	String.concat "\n " (List.map string_of_decl interfacedecl.interfacebody)
 
 let string_of_constructordef constructordecl = 
-	"constructor " ^
+	"constructor " ^ 
 	string_of_expr constructordecl.name ^ 
 	"(" ^ String.concat " \n " (List.map string_of_decl constructordecl.params) ^ ")\n " ^
 	String.concat " \n " (List.map string_of_expr constructordecl.consturctor_body) ^
