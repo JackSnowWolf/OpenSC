@@ -15,8 +15,8 @@ signature AUCTION{
   map withdrawals : (Address) => UInt;
 
   /- events -/
-  event HighestBidIncreased = HBI of (Address, UInt);
-  event AuctionEnded        = AE  of (Address, UInt);
+  event HighestBidIncreased = HighestBidIncreased of (Address, UInt);
+  event AuctionEnded        = AuctionEnded  of (Address, UInt);
 
   /- methods -/
   constructor c : (UInt, Address) -> void;
@@ -47,7 +47,7 @@ method bid (){
     lead                 |-> Env.value;
   }
   effects{
-    logs HBI (Env.sender, Env.value);
+    logs HighestBidIncreased (Env.sender, Env.value);
   }
   returns voidlit;
 }
@@ -71,7 +71,7 @@ method terminate (){
   }
   storage{}
   effects{
-    logs AE (leader, lead);
+    logs AuctionEnded (leader, lead);
   }
   returns voidlit;
 }

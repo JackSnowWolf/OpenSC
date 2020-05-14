@@ -276,7 +276,8 @@ let check (signature, implementation) =
         (* All binary operators require operands of the same type*)
         if t2 = Void("Env") && t1 != Void("Env") then
           (t1, SStorageassign((t1, e1'), (t2, e2')))
-        
+        else if (t1 = Uint("uint") && t2 = Int) || (t1 = Int && t2 = Uint("uint")) then
+          (Void("void"), SStorageassign((t1, e1'), (t2, e2')))
         else if t1 = t2 then
           (Void("void"), SStorageassign((t1, e1'), (t2, e2')))
         else raise (Failure err)
