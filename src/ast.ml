@@ -1,4 +1,4 @@
-type op = Add | Sub | Times | Divide | Equal | Neq | Less | And | Or | LGT | RGT | LGTEQ | RGTEQ | PASSIGN
+type op = Add | Sub | Times | Divide | Equal | Neq |  And | Or | LGT | RGT | LGTEQ | RGTEQ | PASSIGN
 
 type typ = 
 	| Bool 
@@ -82,7 +82,6 @@ let string_of_op = function
   | Divide -> "/"
   | Equal -> "=="
   | Neq -> "!="
-  | Less -> "<"
   | And -> "&&"
   | Or -> "||"
 	| LGT -> ">"

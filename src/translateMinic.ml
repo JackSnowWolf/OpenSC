@@ -71,9 +71,14 @@ let backend_ident_of_tempvar =  ident_generator "temp_" "var"
 let rec gen_ctype =
   let open Ctypes in 
   function 
-  | Int -> Tint (I256, Unsigned)
+  | Bool -> Tint (IBool, Unsigned)
+  | Int -> Tint (I256, Signed)
   | Uint x  -> Tint (I256, Unsigned)
   | Void x -> Tvoid
+  | Address x -> Tint (I256, Unsigned)
+  (* TODO: map mapstruct to Thashmap *)
+  | Mapstruct (_, _) -> raise (Failure "Map struct is not a return type")
+
   (* | Mapstruct (t1, t2) -> Thashmap (gen_ctype t1, gen_ctype t2) *)
   (* and gen_ctype_fields
   do we need ctype fields??
@@ -84,6 +89,7 @@ let gen_unop =
   let open Cop in
   function
   | Neq -> Oneg
+  | _ -> raise (Failure "Not a unop!")
   (* | OPnot -> Onotbool
   | OPbitnot -> Onotint
   | OPbitneg -> Onotint
@@ -98,13 +104,14 @@ let gen_binop =
   | Divide -> Odiv
   | And -> Oand
   | Or -> Oor
-  (* | Equal -> Oeq *)
-  | PASSIGN -> Oeq
+  | Equal -> Oeq
   | Neq -> One
   | RGT -> Olt
   | RGTEQ -> Ole
   | LGT -> Ogt
   | LGTEQ -> Oge
+  | PASSIGN -> raise (Failure "PASSIGN should be solved as Storageassign in expr")
+
 (*   | OPlt -> Olt
   | OPle -> Ole
   | OPgt -> Ogt
@@ -115,6 +122,14 @@ let gen_binop =
   | OPbitand -> Oand
   | OPbitor -> Oor
   | OPsha_2 -> Osha_2 *)
+
+
+let rec gen_rexpr e =
+  let open Integers in
+  let open Language in
+  match e with
+  |(t, SId l) -> Etempvar (backend_ident_of_tempvar l, gen_ctype t)
+  | se -> raise (Failure ("Not implemented: " ^ string_of_sexpr se))
 
 let rec gen_lexpr e =
   let open Ctypes in
@@ -128,19 +143,29 @@ let rec gen_lexpr e =
                         |false -> Econst_int256 (Int256.zero, Tint (I256, Unsigned)) )
   | (t, SId l) -> Evar (backend_ident_of_globvar l, gen_ctype t)
   | (t1, SBinop ((t2, se1), op, (t3, se2))) -> Ebinop (gen_binop op, gen_lexpr (t2, se1), gen_lexpr (t3, se2), gen_ctype t1)	
-  (*| (t, SId l)-> Etempvar (backend_ident_of_tempvar 1, gen_ctype t) (* this is wrong leave for now *) *)
-  | (t, SEnvLit(s1, s2)) -> (match s2 with |"sender" -> Ecall0 (Baddress, Tvoid))
-
-let rec gen_rexpr e =
-  let open Integers in
-  let open Language in
-  match e with
-  |(t, SId l) -> Etempvar (backend_ident_of_tempvar l, gen_ctype t)
+  | (t, SComparsion ((t1, se1), op, (t2, se2))) -> Ebinop (gen_binop op, gen_lexpr (t1, se1), gen_lexpr (t2, se2), gen_ctype t)	
+  | (t, SMapexpr((t1, se1), selist)) -> 
+    (* TODO: convert selist's type to Tstruct *)
+    let se2 = List.hd selist in
+    let _ = print_endline (string_of_sexpr se2) in
+    let l = match se1 with
+      SId l -> l;
+      | _ -> raise (Failure ("Map variable should be an id in expression " ^ string_of_sexpr (t1, se1) ))
+    in 
+    Ehashderef(Evar (backend_ident_of_globvar l, gen_ctype t), gen_lexpr se2, gen_ctype t)
+  | (t, SEnvLit(s1, s2)) -> 
+    (
+      match s2 with 
+      | "sender" -> Ecall0 (Baddress, Tvoid)
+      | _ -> let _ = print_endline ("Waring: Env key may not support") in
+      Ecall0 (Baddress, Tvoid)
+    )
+  | se -> raise (Failure ("Not implemented: " ^ string_of_sexpr se))
 
 (** gen_assign_stmt : statement **)
 let gen_assign_stmt e1 e2 = 
   let open Language in
-  Sassign(gen_lexpr e1, gen_rexpr e2)
+  Sassign(gen_lexpr e1, gen_lexpr e2)
 
 let gen_set_stmt id e1 =
   let open Language in
