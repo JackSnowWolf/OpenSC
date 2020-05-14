@@ -232,25 +232,26 @@ let gen_return_cmd (return_type, sx) =
 (** gen_methoddef : coq_function **)
 let gen_methoddef m =
   let open Datatypes in
+  let method_classify (ty, _) = match ty with
+    | Void s -> false
+    | _ -> true
+  in
   (* let dest = builtinBase_local_ident_start in   *) (* let builtinBase_local_ident_start = 10 *)
   (* let is_pure, has_return = method_classify mt in *)
+  let has_return = method_classify m.sreturns in
   (* let body = gen_set_stmt  builtinBase_local_ident_start (List.hd m.sstorage_body) in *)
-  let body = 
-    Ssequence(Ssequence(gen_guard_cmd m.sguard_body, gen_storage_cmd m.sstorage_body), gen_return_cmd m.sreturns)
-  in
+  (* let body =  *)
+    (* gen_storage_cmd m.sstorage_body *)
+    (* Ssequence(gen_guard_cmd m.sguard_body, gen_storage_cmd m.sstorage_body) *)
   let ret_type (ty, sx) = gen_ctype ty in
   { 
     fn_return = ret_type m.sreturns;
     fn_params = gen_params m.sparams; (* (ident, coq_type) prod list; *)
     fn_temps  = Coq_nil; (* coqlist_of_list (gen_tempenv ((dest,mt.aMethodReturnType.aTypeCtype) :: gen_cmd_locals m.aMethodBody dest))*)
-    fn_body =  (* (if has_return then
-                  Ssequence (body,
-			     (Sreturn Tvoid))
-		else *)
-      body
-      (* Ssequence (body,
-        (Sreturn (Some (Etempvar (positive_of_int 10,
-             ret_type))))) *)
+    fn_body =  (if has_return then
+      Ssequence(Ssequence(gen_guard_cmd m.sguard_body, gen_storage_cmd m.sstorage_body), gen_return_cmd m.sreturns)
+		else 
+      Ssequence(gen_guard_cmd m.sguard_body, gen_storage_cmd m.sstorage_body))
   }
 
 (* let gen_methoddef objname m =
@@ -272,11 +273,7 @@ let gen_methoddef m =
       body)
   } *)
 
-(* leave for now
-let method_classify mt =
-  (* is pure *) mt.sreturns = True,
-  (* has return *) mt.aMethodReturnType.aTypeDesc <> ATbuiltin Tunit	
-*)
+
 
 (** gen_object_methods : 
     (Int.int, coq_fun) prod list **)
