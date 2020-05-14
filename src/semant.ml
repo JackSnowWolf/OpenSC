@@ -84,7 +84,7 @@ let check (signature, implementation) =
     | BoolLit l -> (Bool, SBoolLit l)
     | StrLit l -> (Void("void"), SStrLit l)
     (* check Id retrun with the correct type, keep Int for now *)
-    | Id x -> (Int, SId x)
+    | Id x -> (Int, SId(Sglobal, x))
     | EnvLit(x, y) -> (Void("Env"), SEnvLit(x,y))
     | Mapexpr(e1, e2) -> (Int, SMapexpr(check_expr e1, List.map check_expr e2))
     | Binop(e1, op, e2) -> (Int, SBinop(check_expr e1, op, check_expr e2))
@@ -180,7 +180,11 @@ let check (signature, implementation) =
       | BoolLit l -> (Bool, SBoolLit l)
       | StrLit l -> (Void("void"), SStrLit l)
       (* check Id retrun with the correct type, keep Int for now *)
-      | Id x -> (find_var x, SId x)
+      | Id x -> 
+        let t = find_var x in
+        if StringMap.mem x var_decls then
+          (find_var x, SId(Sglobal, x))
+        else (find_var x, SId(Slocal, x))
       | EnvLit(x, y) -> (Void("Env"), SEnvLit(x,y))
       | Mapexpr(e1, e2) as e -> 
         let id_err = string_of_expr e1 ^ " is not a id in " ^ string_of_expr e in

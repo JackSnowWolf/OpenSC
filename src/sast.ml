@@ -2,13 +2,16 @@ open Ast
 
 
 (* type sparam =  *)
+type varscope = 
+	| Sglobal 
+	| Slocal
 
 type sexpr = typ * sx
 and sx = 
 	| SNumLit of int  (* number literal *)
 	| SBoolLit of bool
 	| SStrLit of string
-	| SId of string
+	| SId of varscope * string
 	(* | SVar of sexpr * typ *)
 	| SEnvLit of string * string
 	| SMapexpr of sexpr * sexpr list 
@@ -48,6 +51,9 @@ type simplementation_def = {
 
 type sprogram = sinterface_def * simplementation_def
 
+let string_of_scope s = match s with
+	| Slocal -> ":(local)"
+	| Sglobal -> ":(global)"
 
 let rec string_of_sexpr (t, e) = 
   "(" ^ string_of_typ t ^ ": " ^ 
@@ -55,7 +61,7 @@ let rec string_of_sexpr (t, e) =
 		SNumLit(x) -> string_of_int x
 	| SBoolLit(x) -> string_of_bool x
 	| SStrLit(x) -> "SStrLit(" ^ x ^ ")"
-  | SId(x) -> "SId(" ^ x ^ ")"
+  | SId(s, x) -> "SId(" ^ x ^ string_of_scope s ^ ")"
   | SEnvLit(l, l2) -> "EnvLit(" ^ l ^ (l2) ^ ")"
 	| SMapexpr (l1, l2) -> "Mapexpr(" ^ string_of_sexpr l1 ^ String.concat " " (List.map string_of_sexpr l2) ^ ")"
 	| SBinop(e1, op, e2) ->  "Binop(" ^ (string_of_sexpr e1) ^ " " ^ (string_of_op op) ^ " " ^ (string_of_sexpr e2) ^ ")"

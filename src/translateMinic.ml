@@ -127,7 +127,8 @@ let rec gen_rexpr e =
   let open Integers in
   let open Language in
   match e with
-  |(t, SId l) -> Etempvar (backend_ident_of_globvar l, gen_ctype t)
+  | (t, SId(Sglobal,l)) -> Evar (backend_ident_of_globvar l, gen_ctype t)
+  | (t, SId(Slocal,l)) -> Etempvar (backend_ident_of_tempvar l, gen_ctype t)
   | se -> raise (Failure ("Not implemented: " ^ string_of_sexpr se))
 
 let rec gen_lexpr e =
@@ -140,16 +141,13 @@ let rec gen_lexpr e =
   | (t, SBoolLit l) -> (match l with 
                         |true -> Econst_int256 (Int256.one, Tint (I256, Unsigned))
                         |false -> Econst_int256 (Int256.zero, Tint (I256, Unsigned)) )
-  | (t, SId l) -> Evar (backend_ident_of_globvar l, gen_ctype t)
+  | (t, SId(Sglobal,l)) -> Evar (backend_ident_of_globvar l, gen_ctype t)
+  | (t, SId(Slocal,l)) -> Etempvar (backend_ident_of_tempvar l, gen_ctype t)
   | (t1, SBinop ((t2, se1), op, (t3, se2))) -> Ebinop (gen_binop op, gen_lexpr (t2, se1), gen_lexpr (t3, se2), gen_ctype t1)	
   | (t, SComparsion ((t1, se1), op, (t2, se2))) -> Ebinop (gen_binop op, gen_lexpr (t1, se1), gen_lexpr (t2, se2), gen_ctype t)	
   | (t, SMapexpr((t1, se1), selist)) -> 
     (* TODO: convert selist's type to Tstruct *)
     let se2 = List.hd selist in
-    let l = match se1 with
-      SId l -> l;
-      | _ -> raise (Failure ("Map variable should be an id in expression " ^ string_of_sexpr (t1, se1) ))
-    in 
     Ehashderef(gen_lexpr (t1, se1), gen_lexpr se2, gen_ctype t)
   | (t, SEnvLit(s1, s2)) -> 
     (
@@ -180,7 +178,7 @@ let gen_params sparams =
   let open Datatypes in
   let open Globalenvs.Genv in
   let cvt = function
-    | Var(Id str, typ) -> Some (Coq_pair(backend_ident_of_globvar str, gen_ctype typ))
+    | Var(Id str, typ) -> Some (Coq_pair(backend_ident_of_tempvar str, gen_ctype typ))
     | _ -> None
   in
   coqlist_of_list (filter_map cvt sparams)
