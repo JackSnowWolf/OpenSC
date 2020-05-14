@@ -1,67 +1,77 @@
--- simple open auction
--- https://solidity.readthedocs.io/en/v0.4.24/solidity-by-example.html#simple-open-auction
+/- simple open auction -/
+/- https://solidity.readthedocs.io/en/v0.4.24/solidity-by-example.html#simple-open-auction -/
 
 
 signature AUCTION{
-  -- parameters
+  /- parameters -/
   storage beneficiary : Address;
   storage end : UInt;
 
-  -- current state of the auction
-  storage leader : Address  -- leading bidder;
-  storage lead : UInt       -- highest bid;
+  /- current state of the auction -/
+  storage leader : Address;  /- leading bidder; -/
+  storage lead : UInt;       /- highest bid; -/
 
-  -- allowed withdrawals of previous bids
-  map withdrawals : Address => UInt;
+  /- allowed withdrawals of previous bids -/
+  map withdrawals : (Address) => UInt;
 
-  -- events
+  /- events -/
   event HighestBidIncreased = HBI of (Address, UInt);
   event AuctionEnded        = AE  of (Address, UInt);
 
-  -- methods
-  constructor c : (UInt, Address) -> Unit;
-  method bid : Unit -> Unit;
-  method withdraw : Unit -> Unit;
-  method terminate : Unit -> Unit;
+  /- methods -/
+  constructor c : (UInt, Address) -> void;
+  method bid : (void) -> void;
+  method withdraw : (void) -> void;
+  method terminate : (void) -> void;
 
 }
 
 
 constructor c (t : UInt, a : Address){
   storage
-    end          |-> Env.now + t;
+  /-  end          |-> Env.now + t; -/
     beneficiary  |-> a;
-  returns ();
+  returns void;
 }
 
+
 method bid (){
-  guard
+  guard{
     Env.now    <= end;
     Env.value  >  lead;
-    withdrawals[leader] + lead >= withdrawals[leader];  -- overflow checking
-  storage
-    withdrawals[leader]  |-> withdrawals[leader] + lead;
+    withdrawals[(leader)] >= withdrawals[(leader)] - lead;
+  }
+  storage{
+    withdrawals[(leader)]  |-> withdrawals[(leader)] + lead;
     leader               |-> Env.sender;
     lead                 |-> Env.value;
-  effects
+  }
+  effects{
     logs HBI (Env.sender, Env.value);
-  returns ();
+  }
+  returns voidlit;
 }
 
 method withdraw (){
-  guard
-    withdrawals[Env.sender]  != 0;
-  storage
-    withdrawals[Env.sender]  |-> 0;
-  effects
-    sends Env.sender withdrawals[Env.sender];
-  returns ();
+  guard{
+    withdrawals[(Env.sender)]  != 0;
+  }
+  storage{
+    withdrawals[(Env.sender)]  |-> 0;
+  }
+  effects{
+    /- sends Env.sender withdrawals[Env.sender]; -/
+  }
+  returns voidlit;
 }
 
 method terminate (){
-  guard
+  guard{
     Env.now  >= end;
-  effects
+  }
+  storage{}
+  effects{
     logs AE (leader, lead);
-  returns ();
+  }
+  returns voidlit;
 }
