@@ -3,7 +3,7 @@
 signature SimpleStorage {
     storage storedData : int;
 
-	constructor c : void -> void;
+	constructor c : (void) -> void;
 	method set : (int) -> void;
 }
 
