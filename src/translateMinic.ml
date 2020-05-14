@@ -152,7 +152,11 @@ let rec gen_lexpr e =
   | (t, SEnvLit(s1, s2)) -> 
     (
       match s2 with 
-      | "sender" -> Ecall0 (Baddress, Tvoid)
+      | "sender" -> Ecall0 (Bcaller, Tvoid)
+      | "value" -> Ecall0 (Bcallvalue, Tvoid)
+      | "origin" -> Ecall0 (Borigin, Tvoid)
+      | "sig" -> Ecall0 (Baddress, Tvoid)
+      | "data" -> Ecall0 (Baddress, Tvoid)
       | _ -> let _ = print_endline ("Waring: Env key may not support") in
       Ecall0 (Baddress, Tvoid)
     )
