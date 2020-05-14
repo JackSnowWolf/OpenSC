@@ -216,6 +216,16 @@ let gen_guard_cmd guardbody =
   in
   list2seq (filter_map sexpr2stmt guardbody)
 
+let gen_return_cmd (return_type, sx) =
+  let open Datatypes in
+  let return_expr =
+  match return_type with
+  Void(_) -> None
+  | _ -> Some(gen_lexpr (return_type, sx))
+  in Sreturn(return_expr)
+  
+
+
 let builtinBase_local_ident_start = 10
 
 (** gen_methoddef : coq_function **)
@@ -225,10 +235,14 @@ let gen_methoddef m =
   (* let is_pure, has_return = method_classify mt in *)
   (* let body = gen_set_stmt  builtinBase_local_ident_start (List.hd m.sstorage_body) in *)
   let  
-    body = Ssequence(
-      gen_guard_cmd m.sguard_body,
-      gen_storage_cmd m.sstorage_body
-    ) 
+    body = 
+    Ssequence(
+    Ssequence(
+    gen_guard_cmd m.sguard_body,
+    gen_storage_cmd m.sstorage_body
+    ),
+    gen_return_cmd m.sreturns
+    )
   in
   (* let ret_type = gen_ctype (Void "void") in *)
   let ret_type (ty, sx) = gen_ctype ty in
