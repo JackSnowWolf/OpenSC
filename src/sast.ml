@@ -54,8 +54,8 @@ let rec string_of_sexpr (t, e) =
   (match e with 
 		SNumLit(x) -> string_of_int x
 	| SBoolLit(x) -> string_of_bool x
-	| SStrLit(x) -> x
-  | SId(x) -> x
+	| SStrLit(x) -> "SStrLit(" ^ x ^ ")"
+  | SId(x) -> "SId(" ^ x ^ ")"
   | SEnvLit(l, l2) -> "EnvLit(" ^ l ^ (l2) ^ ")"
 	| SMapexpr (l1, l2) -> "Mapexpr(" ^ string_of_sexpr l1 ^ String.concat " " (List.map string_of_sexpr l2) ^ ")"
 	| SBinop(e1, op, e2) ->  "Binop(" ^ (string_of_sexpr e1) ^ " " ^ (string_of_op op) ^ " " ^ (string_of_sexpr e2) ^ ")"

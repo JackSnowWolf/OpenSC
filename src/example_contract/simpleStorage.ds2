@@ -1,10 +1,10 @@
 /- A simple storage program -/
 
 signature SimpleStorage {
-    storage storedData : UInt;
+    storage storedData : int;
 
 	constructor c : void -> void;
-	method set : (UInt) -> void;
+	method set : (int) -> void;
 }
 
 constructor c (){
@@ -12,7 +12,7 @@ constructor c (){
 	returns void;
 }
 
-method set(x: UInt) {
+method set(x: int) {
 	guard{
 		x > 0 ;
 	}
