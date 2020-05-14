@@ -15,7 +15,7 @@ signature TOKEN{
   event Transfer = Transfer of (Address, Address, UInt);
   event Approval = Approval of (Address, Address, UInt);
 
-  constructor c : UInt -> void;
+  constructor c : (UInt) -> void;
   method totalSupply : (void) -> UInt;
   method balanceOf : (Address) -> UInt;
   method transfer : (Address, UInt) -> Bool;
