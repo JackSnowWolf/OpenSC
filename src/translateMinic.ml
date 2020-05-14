@@ -53,14 +53,14 @@ let ident_counter : int ref = ref 550
 
 (** ident_generator : positive **)
 let ident_generator = fun prefix midfix postfix ->
-    let id = (prefix ^ midfix ^ "_"^ postfix) in
-    try positive_of_int (Hashtbl.find ident_table id)
-    with Not_found -> begin
-       let n = !ident_counter in
-       ident_counter := !ident_counter + 1;
-       Hashtbl.add ident_table id n;
-       positive_of_int n
-      end
+  let id = (prefix ^ midfix ^ "_"^ postfix) in
+  try positive_of_int (Hashtbl.find ident_table id)
+  with Not_found -> begin
+      let n = !ident_counter in
+      ident_counter := !ident_counter + 1;
+      Hashtbl.add ident_table id n;
+      positive_of_int n
+    end
 
 let struct_name_to_ident2 = ident_generator "" "struct"
 let struct_field_name_to_ident2 = ident_generator "" "field"
@@ -223,32 +223,21 @@ let gen_guard_cmd guardbody =
 let gen_return_cmd (return_type, sx) =
   let open Datatypes in
   let return_expr =
-  match return_type with
-  Void(_) -> None
-  | _ -> Some(gen_lexpr (return_type, sx))
-  in Sreturn(return_expr)
-  
-
-
-let builtinBase_local_ident_start = 10
+    match return_type with
+    Void(_) -> None
+    | _ -> Some(gen_lexpr (return_type, sx)) 
+  in 
+  Sreturn(return_expr)
 
 (** gen_methoddef : coq_function **)
 let gen_methoddef m =
   let open Datatypes in
-  let dest = builtinBase_local_ident_start in  
+  (* let dest = builtinBase_local_ident_start in   *) (* let builtinBase_local_ident_start = 10 *)
   (* let is_pure, has_return = method_classify mt in *)
   (* let body = gen_set_stmt  builtinBase_local_ident_start (List.hd m.sstorage_body) in *)
-  let  
-    body = 
-    Ssequence(
-    Ssequence(
-    gen_guard_cmd m.sguard_body,
-    gen_storage_cmd m.sstorage_body
-    ),
-    gen_return_cmd m.sreturns
-    )
+  let body = 
+    Ssequence(Ssequence(gen_guard_cmd m.sguard_body, gen_storage_cmd m.sstorage_body), gen_return_cmd m.sreturns)
   in
-  (* let ret_type = gen_ctype (Void "void") in *)
   let ret_type (ty, sx) = gen_ctype ty in
   { 
     fn_return = ret_type m.sreturns;
@@ -303,12 +292,12 @@ let gen_object_methods gen_methodname gen_method o =
 let gen_object_fields declist = 
   let open Datatypes in
   let open Globalenvs.Genv in
-  let cvtTypAss = function
+  let decl2gvars = function
     | TypeAssigndecl(Id s, t) -> Some (Coq_pair(backend_ident_of_globvar s, gen_ctype t))
     | MapAssigndecl(Id s, t) -> Some (Coq_pair(backend_ident_of_globvar s, gen_ctype t))
     | _ -> None
   in
-  coqlist_of_list (filter_map cvtTypAss declist)
+  coqlist_of_list (filter_map decl2gvars declist)
 
 (** gen_object : genv **)
 (* (i, o) = (sinterface, simplementation) *)
