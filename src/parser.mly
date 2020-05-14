@@ -56,7 +56,7 @@ interfaceBody:
 	| STORAGE ID COLON type_ok SEMI {TypeAssigndecl (Id($2), $4)}
 	| MAP ID COLON LPAREN type_list RPAREN MAPASSIGN type_ok SEMI{MapAssigndecl (Id($2), Mapstruct($5, $8))}
 	| EVENT ID ASSIGN ID OF LPAREN type_list RPAREN SEMI {Eventdecl (Id($2), $7)}
-	| CONSTRUCTOR ID COLON type_ok ARROW type_ok SEMI{Constructordecl (Id($2), $4, $6)}
+	| CONSTRUCTOR ID COLON LPAREN type_list RPAREN ARROW type_ok SEMI{Constructordecl (Id($2), $5, $8)}
 	| METHOD ID COLON LPAREN type_list RPAREN ARROW type_ok SEMI{Methodecls (Id($2), $5, $8)} 
 
 
