@@ -71,13 +71,12 @@ let backend_ident_of_tempvar =  ident_generator "temp_" "var"
 let rec gen_ctype =
   let open Ctypes in 
   function 
-  | Bool -> Tint (IBool, Unsigned)
+  | Bool -> Tint (I256, Unsigned)
   | Int -> Tint (I256, Signed)
   | Uint x  -> Tint (I256, Unsigned)
   | Void x -> Tvoid
   | Address x -> Tint (I256, Unsigned)
-  (* TODO: map mapstruct to Thashmap *)
-  | Mapstruct (_, _) -> raise (Failure "Map struct is not a return type")
+  | Mapstruct (key_ty, val_ty) -> Thashmap (gen_ctype (List.hd key_ty), gen_ctype val_ty)
 
   (* | Mapstruct (t1, t2) -> Thashmap (gen_ctype t1, gen_ctype t2) *)
   (* and gen_ctype_fields
@@ -128,7 +127,7 @@ let rec gen_rexpr e =
   let open Integers in
   let open Language in
   match e with
-  |(t, SId l) -> Etempvar (backend_ident_of_tempvar l, gen_ctype t)
+  |(t, SId l) -> Etempvar (backend_ident_of_globvar l, gen_ctype t)
   | se -> raise (Failure ("Not implemented: " ^ string_of_sexpr se))
 
 let rec gen_lexpr e =
@@ -147,12 +146,11 @@ let rec gen_lexpr e =
   | (t, SMapexpr((t1, se1), selist)) -> 
     (* TODO: convert selist's type to Tstruct *)
     let se2 = List.hd selist in
-    let _ = print_endline (string_of_sexpr se2) in
     let l = match se1 with
       SId l -> l;
       | _ -> raise (Failure ("Map variable should be an id in expression " ^ string_of_sexpr (t1, se1) ))
     in 
-    Ehashderef(Evar (backend_ident_of_globvar l, gen_ctype t), gen_lexpr se2, gen_ctype t)
+    Ehashderef(gen_lexpr (t1, se1), gen_lexpr se2, gen_ctype t)
   | (t, SEnvLit(s1, s2)) -> 
     (
       match s2 with 
@@ -171,6 +169,10 @@ let gen_set_stmt id e1 =
   let open Language in
   Sset (positive_of_int id, gen_rexpr e1)
 
+let gen_guard_stmt e = 
+  let open Language in
+  Sifthenelse(gen_lexpr e, Sskip, Srevert)
+
 (* sparams: decls list *)
 (** gen_params : 
     (ident, coq_type) prod list; **)
@@ -178,7 +180,7 @@ let gen_params sparams =
   let open Datatypes in
   let open Globalenvs.Genv in
   let cvt = function
-    | Var(Id str, typ) -> Some (Coq_pair(backend_ident_of_tempvar str, gen_ctype typ))
+    | Var(Id str, typ) -> Some (Coq_pair(backend_ident_of_globvar str, gen_ctype typ))
     | _ -> None
   in
   coqlist_of_list (filter_map cvt sparams)
@@ -190,8 +192,8 @@ let gen_params sparams =
   |  _ -> [] *)
 
 (* storagebody: sexpr list *)
-(** gen_cmd : statement **)
-let gen_cmd storebody =
+(** gen_storage_cmd : statement **)
+let gen_storage_cmd storebody =
   let open Datatypes in
   let rec list2seq = function 
     | [] -> Sskip
@@ -204,6 +206,18 @@ let gen_cmd storebody =
   in
   list2seq (filter_map sexpr2Sassign storebody)
 
+let gen_guard_cmd guardbody = 
+  let open Datatypes in
+  let rec list2seq = function 
+    | [] -> Sskip
+    | hd::[] -> hd
+    | hd::tl -> Ssequence(hd, list2seq tl)
+  in
+  let sexpr2stmt = function
+    | se -> Some(gen_guard_stmt se)
+  in
+  list2seq (filter_map sexpr2stmt guardbody)
+
 let builtinBase_local_ident_start = 10
 
 (** gen_methoddef : coq_function **)
@@ -212,7 +226,12 @@ let gen_methoddef m =
   let dest = builtinBase_local_ident_start in  
   (* let is_pure, has_return = method_classify mt in *)
   (* let body = gen_set_stmt  builtinBase_local_ident_start (List.hd m.sstorage_body) in *)
-  let body = gen_cmd m.sstorage_body in
+  let  
+    body = Ssequence(
+      gen_guard_cmd m.sguard_body,
+      gen_storage_cmd m.sstorage_body
+    ) 
+  in
   (* let ret_type = gen_ctype (Void "void") in *)
   let ret_type (ty, sx) = gen_ctype ty in
   { 
@@ -270,6 +289,7 @@ let gen_object_fields declist =
   let open Globalenvs.Genv in
   let cvtTypAss = function
     | TypeAssigndecl(Id s, t) -> Some (Coq_pair(backend_ident_of_globvar s, gen_ctype t))
+    | MapAssigndecl(Id s, t) -> Some (Coq_pair(backend_ident_of_globvar s, gen_ctype t))
     | _ -> None
   in
   coqlist_of_list (filter_map cvtTypAss declist)
