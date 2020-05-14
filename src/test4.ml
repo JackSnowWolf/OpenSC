@@ -26,4 +26,4 @@ let _ =
   (* | MINIC -> let ge = minicgen filename ast_structure in print_endline (Backend.LanguageExt.show_genv ge)			      *)
 
 
-(* ocamlbuild  -I backend test3.native *)
+(* ocamlbuild -pkg cryptokit -I backend test4.native *)

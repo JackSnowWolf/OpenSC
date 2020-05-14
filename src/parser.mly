@@ -88,12 +88,9 @@ expr_list:
   | expr SEMI expr_list  { $1 :: $3 }
 
 expr:
-	/* | expr SUB term  {Binop ($1, Sub, $3) }
-	| expr MUL term  {Binop ($1, Times, $3) }
-	| expr DIVIDE term  {Binop ($1, Divide, $3) } */
 	| NUMLITERAL { NumLit($1) }
   | BooLit { BoolLit($1) }
-	| ID LBRACK LPAREN arg_list RPAREN RBRACK {Mapexpr(Id($1), $4)}
+	| ID LBRACK arg_list RBRACK {Mapexpr(Id($1), $3)}
 	| ID {Id($1)}
 	| VOID {Voidlit($1) }
 	| ENVIRONMENT POINT ID {EnvLit($1, $3)}
@@ -138,7 +135,7 @@ implementationdecl:
 	}
 
 constructordecl:
-	CONSTRUCTOR id_ok LPAREN param_list RPAREN LBRACE STORAGE constructor_bodylist RETURNS type_ok SEMI RBRACE
+	CONSTRUCTOR id_ok LPAREN param_list RPAREN LBRACE STORAGE expr_list RETURNS type_ok SEMI RBRACE
 	{
 		{
 			name = $2;
@@ -147,13 +144,6 @@ constructordecl:
 			return_type = $10;
 		}
 	}
-constructor_bodylist:
-		{ [] }
-	|constructor_body constructor_bodylist { $1::$2 }
-
-constructor_body:
-	| id_ok PASSIGN id_ok SEMI {Binop($1, PASSIGN , $3)}
-	| id_ok LBRACK arg_list RBRACK PASSIGN id_ok SEMI {Binop(Mapexpr($1, $3), PASSIGN, $6)}
 
 methoddecls:
 		{ [] }
@@ -176,24 +166,6 @@ methoddecl:
 		}
 	}
 
-/* guard_bodylist:
-		{ [] }
-	|guard_body guard_bodylist { $1::$2 }
-		
-guard_body:
-	| expr LGT expr SEMI {Comparsion ($1, LGT, $3)}
-	| expr EQ expr SEMI {Comparsion ($1, Equal, $3)}
-	| expr NEQ expr SEMI {Comparsion ($1, Neq, $3)}
-	| expr RGT expr SEMI {Comparsion ($1, RGT, $3)}
-	| expr LGTEQ expr SEMI {Comparsion ($1, LGTEQ, $3)}
-	| expr RGTEQ expr SEMI {Comparsion ($1, RGTEQ, $3)}
-
-storage_bodylist:
-		{ [] }
-	|storage_body storage_bodylist { $1::$2 }
-
-storage_body:
-	| expr PASSIGN expr SEMI { Storageassign($1, $3) } */
 
 effects_bodylist:
 		{ [] }

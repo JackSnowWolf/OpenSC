@@ -29,7 +29,7 @@ signature AUCTION{
 
 constructor c (t : UInt, a : Address){
   storage
-  /-  end          |-> Env.now + t; -/
+    end          |-> (Env.now) + t; 
     beneficiary  |-> a;
   returns void;
 }
@@ -39,10 +39,10 @@ method bid (){
   guard{
     Env.now    <= end;
     Env.value  >  lead;
-    withdrawals[(leader)] >= withdrawals[(leader)] - lead;
+    withdrawals[leader] >= withdrawals[leader] - lead;
   }
   storage{
-    withdrawals[(leader)]  |-> withdrawals[(leader)] + lead;
+    withdrawals[leader]  |-> withdrawals[leader] + lead;
     leader               |-> Env.sender;
     lead                 |-> Env.value;
   }
@@ -54,10 +54,10 @@ method bid (){
 
 method withdraw (){
   guard{
-    withdrawals[(Env.sender)]  != 0;
+    withdrawals[Env.sender]  != 0;
   }
   storage{
-    withdrawals[(Env.sender)]  |-> 0;
+    withdrawals[Env.sender]  |-> 0;
   }
   effects{
     /- sends Env.sender withdrawals[Env.sender]; -/
