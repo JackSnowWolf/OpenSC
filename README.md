@@ -30,10 +30,10 @@ can be compiled via the translator into binary codes that can be executed on `EV
 
 ### Translator Architecture
 
-<img src="pic/architecture.png" alt="translator architecture" style="width:200px;"/>
+<img src="pic/architecture.png" alt="translator architecture" style="width:100px;"/>
 
 ### Translate Details
-<img src="pic/tranlate_into_MiniC.png" alt="tranlate into MiniC" style="width:200px;"/>
+<img src="pic/tranlate_into_MiniC.png" alt="tranlate into MiniC" style="width:100px;"/>
 
 ### Code Structure
 
