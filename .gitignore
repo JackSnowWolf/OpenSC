@@ -29,6 +29,11 @@ setup.log
 # Local OPAM switch
 _opam/
 
-
 # Mac ignore
 .DS_Store
+
+# npm cache
+node_modules/
+
+# EVM bytecode
+*.bytecode
