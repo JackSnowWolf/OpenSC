@@ -32,3 +32,6 @@ _opam/
 
 # Mac ignore
 .DS_Store
+
+# jetbrains
+.idea/
