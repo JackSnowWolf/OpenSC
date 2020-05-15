@@ -29,10 +29,11 @@ can be compiled via the translator into binary codes that can be executed on `EV
 ## Structure
 
 ### Translator Architecture
-![translator architecture](pic/architecture.png | width=100)
+
+<img src="https://github.com/JackSnowWolf/OpenSC/blob/master/pic/architecture.png" width="200" >
 
 ### Translate Details
-<img src="pic/tranlate_into_MiniC.png" alt="tranlate into MiniC" style="width:100px;"/>
+![tranlate into MiniC](pic/tranlate_into_MiniC.png)
 
 ### Code Structure
 
