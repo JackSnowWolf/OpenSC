@@ -30,7 +30,7 @@ can be compiled via the translator into binary codes that can be executed on `EV
 
 ### Translator Architecture
 
-<img src="https://github.com/JackSnowWolf/OpenSC/blob/master/pic/architecture.png" width="200" >
+<img src="pic/architecture.png" width="200" >
 
 ### Translate Details
 ![tranlate into MiniC](pic/tranlate_into_MiniC.png)
