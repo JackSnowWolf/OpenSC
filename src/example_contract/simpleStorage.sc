@@ -14,7 +14,7 @@ constructor c (){
 
 method set(x: int) {
 	guard{
-		x > 0 ;
+		/-x > 0 ;-/
 	}
 	storage{
     	storedData |-> x;
