@@ -67,6 +67,7 @@ let struct_field_name_to_ident2 = ident_generator "" "field"
 let backend_ident_of_globvar  = ident_generator "var_" "var2"
 let backend_ident_of_funcname = ident_generator "ident_" "function"
 let backend_ident_of_tempvar =  ident_generator "temp_" "var"
+(* let backend_ident_of_tempvar =  positive_of_int 11 *)
 
 let rec gen_ctype =
   let open Ctypes in 
@@ -129,6 +130,7 @@ let rec gen_rexpr e =
   match e with
   | (t, SId(Sglobal,l)) -> Evar (backend_ident_of_globvar l, gen_ctype t)
   | (t, SId(Slocal,l)) -> Etempvar (backend_ident_of_tempvar l, gen_ctype t)
+  (* | (t, SId(Slocal,l)) -> Etempvar (backend_ident_of_tempvar, gen_ctype t) *)
   | se -> raise (Failure ("Not implemented: " ^ string_of_sexpr se))
 
 let rec gen_lexpr e =
@@ -143,6 +145,7 @@ let rec gen_lexpr e =
                         |false -> Econst_int256 (Int256.zero, Tint (I256, Unsigned)) )
   | (t, SId(Sglobal,l)) -> Evar (backend_ident_of_globvar l, gen_ctype t)
   | (t, SId(Slocal,l)) -> Etempvar (backend_ident_of_tempvar l, gen_ctype t)
+  (* | (t, SId(Slocal,l)) -> Etempvar (backend_ident_of_tempvar, gen_ctype t) *)
   | (t1, SBinop ((t2, se1), op, (t3, se2))) -> Ebinop (gen_binop op, gen_lexpr (t2, se1), gen_lexpr (t3, se2), gen_ctype t1)	
   | (t, SComparsion ((t1, se1), op, (t2, se2))) -> Ebinop (gen_binop op, gen_lexpr (t1, se1), gen_lexpr (t2, se2), gen_ctype t)	
   | (t, SMapexpr((t1, se1), selist)) -> 
@@ -183,6 +186,7 @@ let gen_params sparams =
   let open Globalenvs.Genv in
   let cvt = function
     | Var(Id str, typ) -> Some (Coq_pair(backend_ident_of_tempvar str, gen_ctype typ))
+    (* | Var(Id str, typ) -> Some (Coq_pair(backend_ident_of_tempvar, gen_ctype typ)) *)
     | _ -> None
   in
   coqlist_of_list (filter_map cvt sparams)
@@ -247,12 +251,22 @@ let gen_methoddef m =
   { 
     fn_return = ret_type m.sreturns;
     fn_params = gen_params m.sparams; (* (ident, coq_type) prod list; *)
-    fn_temps  = Coq_nil; (* coqlist_of_list (gen_tempenv ((dest,mt.aMethodReturnType.aTypeCtype) :: gen_cmd_locals m.aMethodBody dest))*)
-    fn_body =  (if has_return then
+    (* fn_temps  = Coq_nil; coqlist_of_list (gen_tempenv ((dest,mt.aMethodReturnType.aTypeCtype) :: gen_cmd_locals m.aMethodBody dest)) *)
+    (* fn_temps  = coqlist_of_list [Coq_pair(positive_of_int 10, gen_ctype (Void "void"))]; *)
+    fn_temps  = Coq_nil;
+    fn_body =  
+    (* gen_storage_cmd m.sstorage_body *)
+    (if has_return then
       Ssequence(Ssequence(gen_guard_cmd m.sguard_body, gen_storage_cmd m.sstorage_body), gen_return_cmd m.sreturns)
 		else 
       Ssequence(gen_guard_cmd m.sguard_body, gen_storage_cmd m.sstorage_body))
   }
+
+  (* { fn_return = Tvoid;
+  fn_params = (11,TInt (SIZE,SIGNEDNESS))::nil;
+  fn_temps =  (10,Tvoid)::nil;
+  fn_body = Sassign(Evar(550,TInt (SIZE,SIGNEDNESS)),Etempvar(11,TInt (SIZE,SIGNEDNESS)))
+  } *)
 
 (* let gen_methoddef objname m =
   let open Datatypes in
@@ -273,7 +287,66 @@ let gen_methoddef m =
       body)
   } *)
 
+(* Print MiniC expressions/statements, for debugging purposes. *)
 
+
+let rec string_of_ctype = 
+  let open Ctypes in
+  function
+  | Tvoid -> "Tvoid"
+  | Tint (_,_) -> "TInt (SIZE,SIGNEDNESS)"
+  | Tpointer _ -> "Tpointer"
+  | Tarray (t,z) -> ("Tarray ("^string_of_ctype t^","^string_of_int(int_of_z z)^")")
+  | Thashmap (t1,t2) -> ("Thashmap("^string_of_ctype t1^","^string_of_ctype t2^")")
+  | Tfunction (ts,t) -> "Tfunction (TYPES,TYPE)"
+  | Tstruct (id,flds) -> "Tstring (IDENT, FIELDS)"
+  | Tunion  (id,flds) -> "Tunion (IDENT, FIELDS)"
+  | Tcomp_ptr id -> "Tcomp_ptr ID"
+		    
+let rec string_of_expr = function
+  | Econst_int (z, t) -> ("Econst_int (" ^ string_of_int (int_of_z z) ^ ","^string_of_ctype t^")")
+  | Econst_int256 (z, t) -> ("Econst_int (" ^ string_of_int (int_of_z z) ^ ","^string_of_ctype t^")")
+  | Evar (id,t) -> ("Evar("^string_of_int (int_of_positive id)^","^string_of_ctype t^")")
+  | Etempvar (id,t) -> ("Etempvar("^string_of_int (int_of_positive id)^","^string_of_ctype t^")")
+  | Ederef (e,t) -> ("Ederef(" ^ string_of_expr e ^","^ string_of_ctype t ^")")
+  | Eunop (op,e,t) -> ("Eunop(OP,"^string_of_expr e^","^string_of_ctype t ^")")
+  | Ebinop (op,e1,e2,t) -> ("Ebinop(OP,"^string_of_expr e1^","^string_of_expr e2^","^string_of_ctype t ^")")
+  | Efield (e, ident, t) ->("Efield("^string_of_expr e^","^string_of_int (int_of_positive ident)^","^string_of_ctype t^")")
+  | Earrayderef (e1,e2,t) -> ("Earrayderef("^string_of_expr e1 ^","^string_of_expr e2^","^string_of_ctype t^")")
+  | Ehashderef (e1,e2,t) -> ("Ehashderef("^string_of_expr e1 ^","^string_of_expr e2^","^string_of_ctype t^")")
+  | Ecall0 (bt,t) -> "Ecall0(BUILTIN,TYPE)"
+  | Ecall1 (bt,e,t) -> "Ecall0(BUILTIN,EXPR,TYPE)"
+
+let rec string_of_statement = function
+  | Sskip -> "Sskip"
+  | Sassign (e1,e2) -> ("Sassign("^string_of_expr e1 ^","^ string_of_expr e2 ^")")
+  | Sset (id,e) -> ("Sset("^string_of_int(int_of_positive id)^","^string_of_expr e^")")
+  | Scall (None, lab, exprs) -> "Scall(None, LABEL, ARGS)"
+  | Scall (Some id, lab, expr) -> "Scall(Some ID, LABEL, ARGS)"
+  | Ssequence (s1,s2) -> ("Ssequence("^string_of_statement s1 ^","^ string_of_statement s2^")")
+  | Sifthenelse (e,s1,s2) -> ("Sifthenelse("^string_of_expr e^","^string_of_statement s1^","^string_of_statement s2 ^")")
+  | Sloop s -> "(Sloop "^string_of_statement s^")"
+  | Sbreak -> "Sbreak"
+  | Sreturn None -> "Sreturn None"
+  | Sreturn (Some e) -> ("Sreturn Some("^string_of_expr e^")")		      
+  | Stransfer (e1,e2) -> "Stransfer ("^string_of_expr e1 ^","^ string_of_expr e2 ^")"
+  | Scallmethod (e1,ids,z,e,es) -> "Scallmethod TODO"
+  | Slog e -> "Slog " ^ string_of_expr e
+  | Srevert -> "Srevert"
+
+let rec string_of_params = 
+  let open Datatypes in
+  function
+  | Coq_cons (Coq_pair(id, t) , params) -> "("^string_of_int (int_of_positive id) ^","^string_of_ctype t ^")::"^ string_of_params params
+  | Coq_nil -> "nil"
+		 
+let string_of_methoddef md =
+   "{ fn_return = " ^ string_of_ctype md.fn_return ^ ";\n"
+  ^"  fn_params = " ^ string_of_params md.fn_params ^";\n"
+  ^"  fn_temps =  " ^ string_of_params md.fn_temps ^";\n"
+  ^"  fn_body = " ^ string_of_statement md.fn_body ^"\n"
+  ^"}"
+   
 
 (** gen_object_methods : 
     (Int.int, coq_fun) prod list **)
@@ -281,7 +354,8 @@ let gen_object_methods gen_methodname gen_method o =
   let open Datatypes in
   coqlist_of_list
     (List.map
-      (fun m -> Coq_pair (gen_methodname m, gen_method m))
+    (* print_endline(string_of_methoddef (gen_method m)); *)
+      (fun m -> Coq_pair (gen_methodname m, gen_method m)) (* for debugging purpose *)
       o.smethods) 
 
 (** gen_object_fields :
@@ -302,17 +376,20 @@ let gen_object (i, o) =
   let open Datatypes in
   let open Globalenvs.Genv in
   let open Cryptokit in
-  let keccak_intval (_, SStrLit str) =
+  let open Abi in 
+  (* let keccak_intval (_, SStrLit str) =
     let hashval = hash_string (Hash.keccak 256) str in
       (0x01000000) * Char.code (String.get hashval 0)
     + (0x00010000) * Char.code (String.get hashval 1)
     + (0x00000100) * Char.code (String.get hashval 2)
     +                Char.code (String.get hashval 3) 
-  in
+  in *)
   (* let make_funcname m = backend_ident_of_funcname o.sconsturctor_def.sname m.smethodname in *)
   (* let make_methname m = coq_Z_of_int 1101101111 in *)
   (* let make_methname m = coq_Z_of_int (function_selector_intval_of_method m) in *) (* function_selector_intval_of_method: from abi.ml *)
-  let make_methname m = coq_Z_of_int (keccak_intval m.smethodname) in 
+  let make_methname m = coq_Z_of_int (function_selector_intval_of_method m) in 
+  (* let make_methname m = coq_Z_of_int 1627277233 in  *)
+  (* let make_methname m = coq_Z_of_int 1101101111 in *)
     new_genv (* new_genv: vars -> funcs -> methods -> constructor  *)
       (gen_object_fields i.sinterfacebody) (* vars: (ident, coq_type) prod list *)
       Coq_nil (* funcs: (id, coq_fun) prod list. Only the lower layers have funcs *)
@@ -340,38 +417,3 @@ type genv = {
     genv_constructor : coq_function option 
   }
 **)
-
-(* 
-(* Print MiniC expressions/statements, for debugging purposes. *)
-let rec string_of_ctype = 
-  let open Ctypes in
-  function
-  | Tvoid -> "Tvoid"
-  | Tint (_,_) -> "TInt (SIZE,SIGNEDNESS)"
-  | Tpointer _ -> "Tpointer"
-  | Tarray (t,z) -> ("Tarray ("^string_of_ctype t^","^string_of_int(int_of_z z)^")")
-  | Thashmap (t1,t2) -> ("Thashmap("^string_of_ctype t1^","^string_of_ctype t2^")")
-  | Tfunction (ts,t) -> "Tfunction (TYPES,TYPE)"
-  | Tstruct (id,flds) -> "Tstring (IDENT, FIELDS)"
-  | Tunion  (id,flds) -> "Tunion (IDENT, FIELDS)"
-  | Tcomp_ptr id -> "Tcomp_ptr ID"
-
-let rec string_of_expr = function
-  | Econst_int (z, t) -> ("Econst_int (" ^ string_of_int (int_of_z z) ^ ","^string_of_ctype t^")")
-  | Econst_int256 (z, t) -> ("Econst_int (" ^ string_of_int (int_of_z z) ^ ","^string_of_ctype t^")")
-  | Evar (id,t) -> ("Evar("^string_of_int (int_of_positive id)^","^string_of_ctype t^")")
-  | Etempvar (id,t) -> ("Etempvar("^string_of_int (int_of_positive id)^","^string_of_ctype t^")")
-  | Ederef (e,t) -> ("Ederef(" ^ string_of_expr e ^","^ string_of_ctype t ^")")
-  | Eunop (op,e,t) -> ("Eunop(OP,"^string_of_expr e^","^string_of_ctype t ^")")
-  | Ebinop (op,e1,e2,t) -> ("Ebinop(OP,"^string_of_expr e1^","^string_of_expr e2^","^string_of_ctype t ^")")
-  | Efield (e, ident, t) ->("Efield("^string_of_expr e^","^string_of_int (int_of_positive ident)^","^string_of_ctype t^")")
-  | Earrayderef (e1,e2,t) -> ("Earrayderef("^string_of_expr e1 ^","^string_of_expr e2^","^string_of_ctype t^")")
-  | Ehashderef (e1,e2,t) -> ("Ehashderef("^string_of_expr e1 ^","^string_of_expr e2^","^string_of_ctype t^")")
-  | Ecall0 (bt,t) -> "Ecall0(BUILTIN,TYPE)"
-  | Ecall1 (bt,e,t) -> "Ecall0(BUILTIN,EXPR,TYPE)"
-
-let rec string_of_params = 
-  let open Datatypes in
-  function
-  | Coq_cons (Coq_pair(id, t) , params) -> "("^string_of_int (int_of_positive id) ^","^string_of_ctype t ^")::"^ string_of_params params
-  | Coq_nil -> "nil" *)
