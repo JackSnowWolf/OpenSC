@@ -22,6 +22,13 @@ const provider = new ethers.providers.JsonRpcProvider(endpoint);
 // ];
 
 const abi = [
+  {"type":"function",
+  "name":"get",
+  "inputs":[],
+  "outputs":[{"name":"", "type":"uint256"}],
+  "payable":"true",
+  "constant":true,
+  "stateMutability":"payable"},
  {"type":"function",
    "name":"set",
    "inputs":[{"name":"x", "type":"uint256"}],
@@ -44,10 +51,18 @@ async function deploy() {
   let deployedBytecode = await provider.getCode(contract.address);
   // console.log("deployed bytecode: " + deployedBytecode);
 
+  console.log("calling get...");
+  let getval = await contract.get();
+  console.log("value get as: " + getval);
+
   let setv = 240; // arbitrary uint
   console.log("calling set...");
   setval = await contract.set(setv);
   console.log("value set as: " + setval);
+
+  console.log("calling get...");
+  getval = await contract.get();
+  console.log("value get as: " + getval);
 }
 
 deploy();

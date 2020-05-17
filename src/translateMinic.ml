@@ -66,8 +66,8 @@ let struct_name_to_ident2 = ident_generator "" "struct"
 let struct_field_name_to_ident2 = ident_generator "" "field"
 let backend_ident_of_globvar  = ident_generator "var_" "var2"
 let backend_ident_of_funcname = ident_generator "ident_" "function"
-(* let backend_ident_of_tempvar =  ident_generator "temp_" "var" *)
-let backend_ident_of_tempvar =  positive_of_int 11
+let backend_ident_of_tempvar =  ident_generator "temp_" "var"
+(* let backend_ident_of_tempvar =  positive_of_int 11 *)
 
 let rec gen_ctype =
   let open Ctypes in 
@@ -129,8 +129,8 @@ let rec gen_rexpr e =
   let open Language in
   match e with
   | (t, SId(Sglobal,l)) -> Evar (backend_ident_of_globvar l, gen_ctype t)
-  (* | (t, SId(Slocal,l)) -> Etempvar (backend_ident_of_tempvar l, gen_ctype t) *)
-  | (t, SId(Slocal,l)) -> Etempvar (backend_ident_of_tempvar, gen_ctype t)
+  | (t, SId(Slocal,l)) -> Etempvar (backend_ident_of_tempvar l, gen_ctype t)
+  (* | (t, SId(Slocal,l)) -> Etempvar (backend_ident_of_tempvar, gen_ctype t) *)
   | se -> raise (Failure ("Not implemented: " ^ string_of_sexpr se))
 
 let rec gen_lexpr e =
@@ -144,8 +144,8 @@ let rec gen_lexpr e =
                         |true -> Econst_int256 (Int256.one, Tint (I256, Unsigned))
                         |false -> Econst_int256 (Int256.zero, Tint (I256, Unsigned)) )
   | (t, SId(Sglobal,l)) -> Evar (backend_ident_of_globvar l, gen_ctype t)
-  (* | (t, SId(Slocal,l)) -> Etempvar (backend_ident_of_tempvar l, gen_ctype t) *)
-  | (t, SId(Slocal,l)) -> Etempvar (backend_ident_of_tempvar, gen_ctype t)
+  | (t, SId(Slocal,l)) -> Etempvar (backend_ident_of_tempvar l, gen_ctype t)
+  (* | (t, SId(Slocal,l)) -> Etempvar (backend_ident_of_tempvar, gen_ctype t) *)
   | (t1, SBinop ((t2, se1), op, (t3, se2))) -> Ebinop (gen_binop op, gen_lexpr (t2, se1), gen_lexpr (t3, se2), gen_ctype t1)	
   | (t, SComparsion ((t1, se1), op, (t2, se2))) -> Ebinop (gen_binop op, gen_lexpr (t1, se1), gen_lexpr (t2, se2), gen_ctype t)	
   | (t, SMapexpr((t1, se1), selist)) -> 
@@ -185,8 +185,8 @@ let gen_params sparams =
   let open Datatypes in
   let open Globalenvs.Genv in
   let cvt = function
-    (* | Var(Id str, typ) -> Some (Coq_pair(backend_ident_of_tempvar str, gen_ctype typ)) *)
-    | Var(Id str, typ) -> Some (Coq_pair(backend_ident_of_tempvar, gen_ctype typ))
+    | Var(Id str, typ) -> Some (Coq_pair(backend_ident_of_tempvar str, gen_ctype typ))
+    (* | Var(Id str, typ) -> Some (Coq_pair(backend_ident_of_tempvar, gen_ctype typ)) *)
     | _ -> None
   in
   coqlist_of_list (filter_map cvt sparams)
@@ -252,12 +252,14 @@ let gen_methoddef m =
     fn_return = ret_type m.sreturns;
     fn_params = gen_params m.sparams; (* (ident, coq_type) prod list; *)
     (* fn_temps  = Coq_nil; coqlist_of_list (gen_tempenv ((dest,mt.aMethodReturnType.aTypeCtype) :: gen_cmd_locals m.aMethodBody dest)) *)
-    fn_temps  = coqlist_of_list [Coq_pair(positive_of_int 10, gen_ctype (Void "void"))];
-    fn_body =  gen_storage_cmd m.sstorage_body
-    (* (if has_return then
+    (* fn_temps  = coqlist_of_list [Coq_pair(positive_of_int 10, gen_ctype (Void "void"))]; *)
+    fn_temps  = Coq_nil;
+    fn_body =  
+    (* gen_storage_cmd m.sstorage_body *)
+    (if has_return then
       Ssequence(Ssequence(gen_guard_cmd m.sguard_body, gen_storage_cmd m.sstorage_body), gen_return_cmd m.sreturns)
 		else 
-      Ssequence(gen_guard_cmd m.sguard_body, gen_storage_cmd m.sstorage_body)) *)
+      Ssequence(gen_guard_cmd m.sguard_body, gen_storage_cmd m.sstorage_body))
   }
 
   (* { fn_return = Tvoid;
@@ -352,7 +354,8 @@ let gen_object_methods gen_methodname gen_method o =
   let open Datatypes in
   coqlist_of_list
     (List.map
-      (fun m -> print_endline(string_of_methoddef (gen_method m));Coq_pair (gen_methodname m, gen_method m)) (* for debugging purpose *)
+    (* print_endline(string_of_methoddef (gen_method m)); *)
+      (fun m -> Coq_pair (gen_methodname m, gen_method m)) (* for debugging purpose *)
       o.smethods) 
 
 (** gen_object_fields :
@@ -373,17 +376,20 @@ let gen_object (i, o) =
   let open Datatypes in
   let open Globalenvs.Genv in
   let open Cryptokit in
-  let keccak_intval (_, SStrLit str) =
+  let open Abi in 
+  (* let keccak_intval (_, SStrLit str) =
     let hashval = hash_string (Hash.keccak 256) str in
       (0x01000000) * Char.code (String.get hashval 0)
     + (0x00010000) * Char.code (String.get hashval 1)
     + (0x00000100) * Char.code (String.get hashval 2)
     +                Char.code (String.get hashval 3) 
-  in
+  in *)
   (* let make_funcname m = backend_ident_of_funcname o.sconsturctor_def.sname m.smethodname in *)
   (* let make_methname m = coq_Z_of_int 1101101111 in *)
   (* let make_methname m = coq_Z_of_int (function_selector_intval_of_method m) in *) (* function_selector_intval_of_method: from abi.ml *)
-  let make_methname m = coq_Z_of_int (keccak_intval m.smethodname) in 
+  let make_methname m = coq_Z_of_int (function_selector_intval_of_method m) in 
+  (* let make_methname m = coq_Z_of_int 1627277233 in  *)
+  (* let make_methname m = coq_Z_of_int 1101101111 in *)
     new_genv (* new_genv: vars -> funcs -> methods -> constructor  *)
       (gen_object_fields i.sinterfacebody) (* vars: (ident, coq_type) prod list *)
       Coq_nil (* funcs: (id, coq_fun) prod list. Only the lower layers have funcs *)
