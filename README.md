@@ -72,26 +72,33 @@ cd src && Make
 - `bytecode`
     - generate EVM bytecode and print it
 
-### How to compile
-
+### How to test
+#### command
 ```bash
 # at root directory of OpenSC
-cd src
+% cd src
 # compile opensc
+% make
 ocamlbuild -pkg cryptokit -I backend opensc.native
-./opensc.native [source.sc] [mode]
-# compile test.ml for printing ast
-ocamlbuild test.native
-./test.native < [source.sc]
-# compile test2.ml for printing sast
-ocamlbuild test2.native
-./test2.native < [source.sc]
-# compile test3.ml for printing Minic ast
-ocamlbuild test3.native
-./test3.native < [source.sc]
-# compile test4.ml for printing bytecode
-ocamlbuild test4.native
-./test4.native < [source.sc]
+# run opensc
+% ./opensc.native [path to source.sc] [mode] 
+# mode : ast | sast | minic | bytecode
+```
+#### example program sources for test
+* example_contract/simpleStorage.sc
+* example_contract/simpleToken.sc
+
+#### run bytecode on EVM
+##### install dependencies
+* install and use node 12
+* install ganache-cli, ethers
+* open ganache-cli
+##### run bytecode on EVM
+```bash
+# at root directory of OpenSC
+% cd src/example_contract
+./test-simpleStorage.js simpleStorage.bytecode
+./test-simpleToken.js simpleToken.bytecode
 ```
 
 
