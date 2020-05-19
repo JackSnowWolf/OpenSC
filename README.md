@@ -1,5 +1,5 @@
 # OpenSC
-A toy project of programming language for smart contract. 
+A toy project of programming language for smart contract written in `Ocaml`. 
 This is final project for COMS W4115 programming language & translator @ Columbia.
 
 ## Introduction
@@ -107,7 +107,17 @@ ocamlbuild -pkg cryptokit -I backend opensc.native
 Check our [Language Reference Manual](doc/OpenSC_Reference_Manual.pdf) for
  detailed usage
 
+> WARNING: We are not supporting multi-key mapping, events and log functions.
 
+## TODO
+
+- [ ] Constructor
+- [ ] Ethernum Event and log
+- [x] Guard statement
+- [x] Single-key mapping
+- [ ] Multi-key mapping
+- [ ] Multiple objects
+- [ ] Control flow statement (if, for statement)
 
 
 
@@ -116,7 +126,7 @@ Check our [Language Reference Manual](doc/OpenSC_Reference_Manual.pdf) for
 * Proposal: [proposal pdf](doc/PLT_Project_Proposal.pdf)
 * Report: [report pdf](doc/PLT_Project_Report_OpenSC_A_Smart_Contract_Language.pdf)
 * Language Reference Manual: [LRM](doc/OpenSC_Reference_Manual.pdf)
-
+* Presentation: [presetation slides](doc/PLT_OpenSC_presentation.pdf)
 
 ## Contribution
 
@@ -141,5 +151,10 @@ Thanks to Vilhelm Sjöberg, our project advisor, researcher at Yale and the prim
 - Jun Sha `js5506`: [email](mailto:js5506@columbia.edu.com)
 - Linghan Kong `lk2811`: [email](mailto:lk2811@columbia.edu)
 - Ruibin Ma `rm3708`: [email](mailto:rm3708@columbia.edu)
-- Rahul Sehrawat `rs3688`: [email](mailto:rs3688@columbia.edu)
 - Chong Hu `ch3467`: [email](mailto:ch3467@columbia.edu)
+
+## License
+
+Copyright (c) 2020, `OpenSC`. All rights reserved.
+
+The code is distributed under a MIT license. See [`LICENSE`](LICENSE) for information.
